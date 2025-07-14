@@ -1,48 +1,76 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { FaBars, FaHome, FaLock, FaMoneyBill, FaUser } from "react-icons/fa";
+import { RiUserShared2Line } from "react-icons/ri";
+import { RxDashboard } from "react-icons/rx";
+import { FaBuildingUser } from "react-icons/fa6";
+import { LuWorkflow } from "react-icons/lu";
+import { TbReport } from "react-icons/tb";
 import { MdMessage } from "react-icons/md";
+import { MdWorkspacesFilled } from "react-icons/md";
+import { HiMiniUserGroup } from "react-icons/hi2";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import SidebarMenu from "./SubMenu";
 import "./styles/layout.css";
-
-
+import Navbar from "./Navbar";
 const routes = [
     {
-        path: "/admin/home",
-        name: "Home",
-        icon: <FaHome />,
-    },
-    {
-        path: "/admin/dashboard",
+        path: "/dashboard",
         name: "Dashboard",
-        icon: <FaUser />,
+        icon: <RxDashboard />,
     },
     {
-        path: "/admin/master/data",
+        path: "/manage-report",
+        name: "Reports",
+        icon: <TbReport />,
+    },
+    {
+        path: "/manage-person",
+        name: "People",
+        icon: <HiMiniUserGroup />,
+    },
+    {
+        path: "/Assignments-project",
+        name: "Assignments",
+        icon: <RiUserShared2Line />,
+    },
+    {
+        path: "/manage-company",
+        name: "Company Info",
+        icon: <FaBuildingUser />,
+    },
+    {
+        path: "/manage-project",
+        name: "Projects",
+        icon: <LuWorkflow />,
+    },
+
+
+    {
+        path: "/master/data",
         name: "Master Data",
         icon: <MdMessage />,
         subRoutes: [
             {
-                path: "/admin/kantor-cabang",
-                name: "Kantor Cabang",
+                path: "/admin/user",
+                name: "User",
                 icon: <FaUser />,
             },
             {
-                path: "/admin/karyawan",
-                name: "Karyawan",
+                path: "/admin/role",
+                name: "Role",
                 icon: <FaLock />,
             },
             {
-                path: "/admin/Gaji",
-                name: "Gaji",
+                path: "/admin/position",
+                name: "Position",
                 icon: <FaMoneyBill />,
             },
         ],
     },
 ];
-const Layout = ({ children }) => {
-    const [isOpen, setIsOpen] = useState(false);
+const Layout = () => {
+    const [isOpen, setIsOpen] = useState(true);
     const toggle = () => setIsOpen(!isOpen);
     const inputAnimation = {
         hidden: {
@@ -79,67 +107,11 @@ const Layout = ({ children }) => {
     };
     return (
         <>
-            <nav className="navbar navbar-expand-lg navbar-light bg-light">
-                <div className="container-fluid">
-                    <a className="navbar-brand" href="#">Navbar</a>
-                    <button
-                        className="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarSupportedContent"
-                        aria-controls="navbarSupportedContent"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation"
-                    >
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
 
-                    <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                            <li className="nav-item">
-                                <a className="nav-link active" aria-current="page" href="#">Home</a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="#">Link</a>
-                            </li>
-                            <li className="nav-item dropdown">
-                                <a
-                                    className="nav-link dropdown-toggle"
-                                    href="#"
-                                    id="navbarDropdown"
-                                    role="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    Dropdown
-                                </a>
-                                <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <li><a className="dropdown-item" href="#">Action</a></li>
-                                    <li><a className="dropdown-item" href="#">Another action</a></li>
-                                    <li><hr className="dropdown-divider" /></li>
-                                    <li><a className="dropdown-item" href="#">Something else here</a></li>
-                                </ul>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link disabled" href="#" tabIndex="-1" aria-disabled="true">Disabled</a>
-                            </li>
-                        </ul>
-                        <form className="d-flex">
-                            <input
-                                className="form-control me-2"
-                                type="search"
-                                placeholder="Search"
-                                aria-label="Search"
-                            />
-                            <button className="btn btn-outline-success" type="submit">Search</button>
-                        </form>
-                    </div>
-                </div>
-            </nav>
             <div className="main-container">
                 <motion.div
                     animate={{
-                        width: isOpen ? "200px" : "45px",
+                        width: isOpen ? "300px" : "45px",
 
                         transition: {
                             duration: 0.5,
@@ -159,7 +131,7 @@ const Layout = ({ children }) => {
                                     exit="hidden"
                                     className="logo"
                                 >
-                                    Hrd Cerdas
+                                    {/* Hrd Cerdas */}
                                 </motion.h1>
                             )}
                         </AnimatePresence>
@@ -186,7 +158,9 @@ const Layout = ({ children }) => {
                                 <NavLink
                                     to={route.path}
                                     key={index}
-                                    className={isOpen ? "link active" : "link"}
+                                    className={({ isActive }) =>
+                                        isActive ? "link active" : "link"
+                                    }
                                 >
                                     <div className="icon">{route.icon}</div>
                                     <AnimatePresence>
@@ -203,11 +177,16 @@ const Layout = ({ children }) => {
                                         )}
                                     </AnimatePresence>
                                 </NavLink>
+
                             );
                         })}
                     </section>
                 </motion.div>
-                <div className="main-content">{children}</div>
+
+                <div className="main-content">
+                    <Navbar />
+                    <Outlet />
+                </div>
 
             </div>
         </>
