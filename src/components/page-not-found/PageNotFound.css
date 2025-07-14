@@ -1,0 +1,68 @@
+.error-page__body {
+    background: url() no-repeat center fixed;
+    background-size: cover;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: source-sans-pro, sans-serif;
+    background-color: #ededed;
+    color: #333;
+}
+
+.error-page__number {
+    display: inline;
+    font-size: 200px;
+    margin: 0;
+    padding: 0;
+    line-height: 0;
+    margin-top: 50px;
+}
+
+.error-page__quote {
+    display: inline;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.error-page__quote:before {
+    content: '{';
+}
+
+.error-page__quote:after {
+    content: '}';
+}
+
+.error-page__container {
+    width: 334px;
+    padding: 5px;
+    text-align: center;
+    position: relative;
+    margin-top: 70px;
+}
+
+.error-page__text {
+    text-align: center;
+    padding-top: 30px;
+}
+
+.error-page__link {
+    color: #3B81BE;
+    line-height: inherit;
+    text-decoration: none;
+}
+
+.error-page__link:after {
+    vertical-align: top;
+    width: 13px;
+    height: 13px;
+    background: url(http://image.noelshack.com/fichiers/2014/32/1407602076-hyperlink.png);
+    background-size: 100%;
+    background-repeat: no-repeat;
+    content: '';
+    display: inline-block;
+}
+
+.error-page__paragraph {
+    text-align: justify;
+}

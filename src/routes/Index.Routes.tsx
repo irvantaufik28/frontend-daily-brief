@@ -10,23 +10,29 @@ import ProjectPage from "../pages/project/ProjectPage";
 import UserPage from "../pages/master/user/UserPage";
 import RolePage from "../pages/master/role/RolePage";
 import PositionPage from "../pages/master/position/PositionPage";
+import SigninPage from "../pages/Signin/SigninPage";
+import PrivateRoute from "../utils/PrivateRoute";
+import PageNotFound from "../components/page-not-found/PageNotFound";
 
 const IndexRoutes = () => {
   return (
-     <Router>
+    <Router>
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="manage-company" element={<CompanyPage />} />
-          <Route path="manage-report" element={<ReportPage />} />
-          <Route path="manage-person" element={<PersonPage />} />
-          <Route path="assignments-project" element={<AssigmentsPage />} />
-          <Route path="manage-project" element={<ProjectPage />} />
+        <Route path="/" element={<SigninPage />} />
+        <Route path="/404" element={<PageNotFound />} />
 
-          <Route path="master-user" element={<UserPage />} />
-          <Route path="master-role" element={<RolePage />} />
-          <Route path="master-position" element={<PositionPage />} />
-
+        <Route element={<PrivateRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/" element={<Layout />}>
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="manage-company" element={<CompanyPage />} />
+            <Route path="manage-report" element={<ReportPage />} />
+            <Route path="manage-person" element={<PersonPage />} />
+            <Route path="assignments-project" element={<AssigmentsPage />} />
+            <Route path="manage-project" element={<ProjectPage />} />
+            <Route path="master-user" element={<UserPage />} />
+            <Route path="master-role" element={<RolePage />} />
+            <Route path="master-position" element={<PositionPage />} />
+          </Route>
         </Route>
       </Routes>
     </Router>

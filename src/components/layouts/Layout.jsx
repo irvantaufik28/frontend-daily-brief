@@ -30,7 +30,7 @@ const routes = [
         icon: <HiMiniUserGroup />,
     },
     {
-        path: "/Assignments-project",
+        path: "/assignments-project",
         name: "Assignments",
         icon: <RiUserShared2Line />,
     },
