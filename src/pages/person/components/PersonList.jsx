@@ -110,7 +110,7 @@ const PersonList = forwardRef((props, ref) => {
 
   const fetchData = useCallback(
     async ({ pageSize, pageIndex, sortBy }) => {
-      setLoading(false)
+      setLoading(true)
       try {
         const params = {
           page: pageIndex + 1,
