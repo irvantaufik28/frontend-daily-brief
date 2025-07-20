@@ -235,17 +235,6 @@ const BasicTabel = ({
           })}
           {loading ? (
             <tr>
-              <td colSpan={columns.length}>Loading...</td>
-            </tr>
-          ) : (
-            <tr>
-
-              <td colSpan={columns.length}>
-                {totalData > 0 ? <Footer /> : <div className="d-flex justify-content-center fw-bold fst-italic">List Empty</div>}
-              </td>
-            </tr>
-          )}{loading ? (
-            <tr>
               <td colSpan={columns.length}>
                 <div className="d-flex justify-content-center align-items-center py-3">
                   <div className="spinner-border text-primary" role="status">
