@@ -20,7 +20,7 @@ const SigninPage = () => {
 
   useEffect(() => {
     if (data) {
-      setCookie('token', data, { path: '/dashboard' });
+      setCookie('token', data, { path: '/' });
       const user = jwtDecode(data);
       if (user.role === 'ADMIN') {
         navigate('/dashboard');
