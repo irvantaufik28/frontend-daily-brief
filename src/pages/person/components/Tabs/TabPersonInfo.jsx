@@ -107,7 +107,18 @@ const TabPersonInfo = () => {
         }
 
         try {
+            Swal.fire({
+                title: "Saving...",
+                text: "Please wait while we save your changes.",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
             await dispatch(updatePerson({ id, values })).unwrap();
+
             await Swal.fire("Saved!", "The data has been updated.", "success");
             dispatch(fetchPerson({ id }));
         } catch (error) {
@@ -117,6 +128,7 @@ const TabPersonInfo = () => {
             setSubmitting(false);
         }
     };
+
 
 
     if (loading || !data) {
