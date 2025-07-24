@@ -51,7 +51,7 @@ const PersonList = forwardRef((props, ref) => {
             >
               Detail
             </Button>
-            <Button
+            {/* <Button
               variant="info"
               size="sm"
               className="me-2"
@@ -65,7 +65,7 @@ const PersonList = forwardRef((props, ref) => {
               onClick={() => props.onDelete(row.values)}
             >
               Delete
-            </Button>
+            </Button> */}
           </>
         ),
       },

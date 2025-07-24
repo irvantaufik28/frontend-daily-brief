@@ -13,6 +13,7 @@ import PositionPage from "../pages/master/position/PositionPage";
 import SigninPage from "../pages/Signin/SigninPage";
 import PrivateRoute from "../utils/PrivateRoute";
 import PageNotFound from "../components/page-not-found/PageNotFound";
+import DetailPersonPage from "../pages/person/DetailPersonPage";
 
 const IndexRoutes = () => {
   return (
@@ -27,6 +28,7 @@ const IndexRoutes = () => {
             <Route path="manage-company" element={<CompanyPage />} />
             <Route path="manage-report" element={<ReportPage />} />
             <Route path="manage-person" element={<PersonPage />} />
+            <Route path="person-detail/:id" element={<DetailPersonPage />} />
             <Route path="assignments-project" element={<AssigmentsPage />} />
             <Route path="manage-project" element={<ProjectPage />} />
             <Route path="master-user" element={<UserPage />} />
