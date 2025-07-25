@@ -165,6 +165,6 @@ main {
   font-weight: 500;
 }
 
-.form-filter-label {
-  color: #b3b3b3 !important;
+.content-adjust {
+   padding: 20px;
 }

@@ -16,13 +16,11 @@ const ReportPage = () => {
 
   return (
     <>
-      <div className="report-list-table">
-        <ReportFromFilter onFilter={(data) => refReportList.current.doFilter(data)} />
-        <ReportList
-          ref={refReportList}
-          onDetail={handleDetail}
-        />
-      </div>
+      <ReportFromFilter onFilter={(data) => refReportList.current.doFilter(data)} />
+      <ReportList
+        ref={refReportList}
+        onDetail={handleDetail}
+      />
     </>
   );
 };

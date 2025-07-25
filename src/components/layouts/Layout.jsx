@@ -185,7 +185,10 @@ const Layout = () => {
 
                 <div className="main-content">
                     <Navbar />
+                    <div className="content-adjust">
+
                     <Outlet />
+                    </div>
                 </div>
 
             </div>

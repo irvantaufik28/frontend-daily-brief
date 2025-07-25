@@ -17,13 +17,12 @@ const PersonPage = () => {
 
   return (
     <>
-      <div className="people-list-table">
-        <PersonFromFilter onFilter={(data) => refPeopleList.current.doFilter(data)} />
-        <PeopleList
-          ref={refPeopleList}
-          onDetail={handleDetail}
-        />
-      </div>
+
+      <PersonFromFilter onFilter={(data) => refPeopleList.current.doFilter(data)} />
+      <PeopleList
+        ref={refPeopleList}
+        onDetail={handleDetail}
+      />
     </>
   );
 };
