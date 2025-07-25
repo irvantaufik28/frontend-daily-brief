@@ -1,9 +1,30 @@
-import React from 'react'
+import { useRef } from "react";
+import { useNavigate } from "react-router-dom"; // <-- Tambahkan ini
+import ReportList from "./components/ReportList";
+import ReportFromFilter from "./components/ReportFormFilter";
 
 const ReportPage = () => {
-  return (
-    <div>ReportPage</div>
-  )
-}
+  const refReportList = useRef();
+  const navigate = useNavigate();
 
-export default ReportPage
+  const handleDetail = (data) => {
+    console.log(data?.id);
+    if (data?.id) {
+      navigate(`/report-detail/${data.id}`);
+    }
+  };
+
+  return (
+    <>
+      <div className="report-list-table">
+        <ReportFromFilter onFilter={(data) => refReportList.current.doFilter(data)} />
+        <ReportList
+          ref={refReportList}
+          onDetail={handleDetail}
+        />
+      </div>
+    </>
+  );
+};
+
+export default ReportPage;

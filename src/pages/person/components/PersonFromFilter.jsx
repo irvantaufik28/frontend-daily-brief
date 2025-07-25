@@ -49,7 +49,7 @@ const PersonFromFilter = ({ onFilter }) => {
                                 <div className="row align-items-end person-coloum-filter">
                                     <div className="col-md-3">
                                         <Form.Group controlId="filterFullName">
-                                            <Form.Label>Name</Form.Label>
+                                            <Form.Label  className="form-filter-label">Name</Form.Label>
                                             <Form.Control
                                                 type="text"
                                                 placeholder="Enter name"
@@ -61,7 +61,7 @@ const PersonFromFilter = ({ onFilter }) => {
                                     </div>
                                     <div className="col-md-3">
                                         <Form.Group controlId="filterPosition">
-                                            <Form.Label>Position</Form.Label>
+                                            <Form.Label className="form-filter-label">Position</Form.Label>
                                             <Form.Control
                                                 type="text"
                                                 placeholder="Enter position"
@@ -73,7 +73,7 @@ const PersonFromFilter = ({ onFilter }) => {
                                     </div>
                                     <div className="col-md-3">
                                         <Form.Group controlId="filterStatus">
-                                            <Form.Label>Status</Form.Label>
+                                            <Form.Label className="form-filter-label">Status</Form.Label>
                                             <Form.Control
                                                 as="select"
                                                 name="status"

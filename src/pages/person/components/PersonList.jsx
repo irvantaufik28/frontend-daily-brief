@@ -181,7 +181,7 @@ const PersonList = forwardRef((props, ref) => {
           }
         });
 
-        const lists = data.data.data
+        const lists = data.data.persons
         const pagination = data.data.paging
 
         setData(lists)
