@@ -10,6 +10,7 @@ import axios from "axios"
 import BasicTable from "../../../components/table/BasicTable"
 import { Button } from "react-bootstrap"
 import config from "../../../config"
+import { AiOutlineEye } from "react-icons/ai"
 
 const PersonList = forwardRef((props, ref) => {
   const apiUrl = config.apiUrl + "/person"
@@ -27,30 +28,72 @@ const PersonList = forwardRef((props, ref) => {
         accessor: "fullName",
       },
       {
+        Header: "Role",
+        accessor: "user.role",
+      },
+      {
         Header: "Position",
         accessor: "position",
       },
       {
         Header: "Email",
-        "accessor" : "email"
+        "accessor": "email"
+      },
+      {
+        Header: "Engagements",
+        "accessor": "category"
+      },
+      {
+        Header: "Join Date",
+        accessor: "startDate",
+        Cell: ({ value }) => {
+          const date = new Date(value);
+          const formatted = new Intl.DateTimeFormat('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+          }).format(date);
+          return formatted;
+        }
       },
       {
         Header: "Status",
         accessor: "status",
+        Cell: ({ value }) => {
+          const isActive = value === "ACTIVE";
+
+          const statusStyle = {
+            padding: "4px 10px",
+            borderRadius: "999px",
+            color: "white",
+            display: "inline-block",
+            fontWeight: "bold",
+            fontSize: "0.75rem",
+            textTransform: isActive ? "uppercase" : "lowercase",
+            backgroundColor: isActive ? "#11e602" : "red",
+          };
+
+          return <span style={statusStyle}>{value}</span>;
+        },
       },
       {
         Header: "Action",
         accessor: "",
         Cell: ({ row }) => (
           <>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="me-2"
-              onClick={() => props.onDetail(row.values)}
-            >
-              Detail
-            </Button>
+            <div style={{
+              // display: "flex", justifyContent: "center" 
+            }}>
+              <AiOutlineEye
+                onClick={() => props.onDetail(row.values)}
+                style={{
+                  color: "black",
+                  fontSize: "1.2rem",
+                  cursor: "pointer"
+                }}
+                title="View Detail"
+              />
+            </div>
             {/* <Button
               variant="info"
               size="sm"
@@ -68,6 +111,7 @@ const PersonList = forwardRef((props, ref) => {
             </Button> */}
           </>
         ),
+        // headerClassName: "text-center",
       },
     ],
     [props]
