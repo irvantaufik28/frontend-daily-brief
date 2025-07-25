@@ -11,7 +11,7 @@ const PersonPage = () => {
   const handleDetail = (data) => {
     console.log(data?.id);
     if (data?.id) {
-      navigate(`/report-detail/${data.id}`);
+      navigate(`/person-detail/${data.id}`);
     }
   };
 
