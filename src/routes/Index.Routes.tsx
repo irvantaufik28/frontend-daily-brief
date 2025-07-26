@@ -14,6 +14,8 @@ import SigninPage from "../pages/Signin/SigninPage";
 import PrivateRoute from "../utils/PrivateRoute";
 import PageNotFound from "../components/page-not-found/PageNotFound";
 import DetailPersonPage from "../pages/person/DetailPersonPage";
+import ReportCreatePage from "../pages/report/ReportCreatePage";
+import ReportDetailPage from "../pages/report/ReportDetailPage";
 
 const IndexRoutes = () => {
   return (
@@ -27,6 +29,9 @@ const IndexRoutes = () => {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="manage-company" element={<CompanyPage />} />
             <Route path="manage-report" element={<ReportPage />} />
+            <Route path="create-report" element={<ReportCreatePage />} />
+            <Route path="report-update/:id" element={<ReportCreatePage />} />
+            <Route path="report-detail/:id" element={<ReportDetailPage />} />
             <Route path="manage-person" element={<PersonPage />} />
             <Route path="person-detail/:id" element={<DetailPersonPage />} />
             <Route path="assignments-project" element={<AssigmentsPage />} />
