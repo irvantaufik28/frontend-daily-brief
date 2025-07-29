@@ -20,9 +20,26 @@ const routes = [
         icon: <RxDashboard />,
     },
     {
-        path: "/manage-report",
+        path: "/reports",
         name: "Reports",
-        icon: <TbReport />,
+        icon: <MdMessage />,
+        subRoutes: [
+            {
+                path: "/manage-report",
+                name: "Manage Reports",
+                icon: <TbReport />,
+            },
+            {
+                path: "/manage-report/send-email",
+                name: "Send Report",
+                icon: <FaLock />,
+            },
+            {
+                path: "/manage-report/draft",
+                name: "Draft",
+                icon: <FaMoneyBill />,
+            },
+        ],
     },
     {
         path: "/manage-person",
@@ -187,7 +204,7 @@ const Layout = () => {
                     <Navbar />
                     <div className="content-adjust">
 
-                    <Outlet />
+                        <Outlet />
                     </div>
                 </div>
 

@@ -35,8 +35,8 @@ main {
 .sidebar {
   background: #222d32;
   color: white;
-  height: 100vh;
   overflow-y: auto;
+  height: auto;
 }
 
 .top_section {
