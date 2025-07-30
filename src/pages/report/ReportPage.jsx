@@ -6,12 +6,17 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { deleteReport } from "../../features/reportSlice";
+import { FaPlus } from "react-icons/fa";
 
 const ReportPage = () => {
   const refReportList = useRef();
   const navigate = useNavigate();
   const dispatch = useDispatch()
 
+
+  const handleAddReport = () => {
+    navigate("/create-report");
+  };
   const handleDetail = (data) => {
     if (data?.id) {
       navigate(`/report-detail/${data.id}`);
@@ -45,12 +50,11 @@ const ReportPage = () => {
     try {
       Swal.fire({ title: "Deleting...", didOpen: () => Swal.showLoading() });
 
-   await dispatch(deleteReport(id)).unwrap();
+      await dispatch(deleteReport(id)).unwrap();
 
       Swal.fire("Deleted!", "Report detail has been deleted.", "success");
 
       refReportList.current.refreshData();
-      // TODO: Reload data (panggil ulang dispatch(fetchReport()) atau sejenis)
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "Failed to delete report detail", "error");
@@ -60,6 +64,12 @@ const ReportPage = () => {
   return (
     <>
       <ReportFromFilter onFilter={(data) => refReportList.current.doFilter(data)} />
+      <div className="d-flex justify-content-end mb-3">
+        <button type="button" className="btn btn-primary me-2" onClick={handleAddReport}>
+          <FaPlus className="me-1" />
+          Add Report
+        </button>
+      </div>
       <ReportList
         ref={refReportList}
         onDetail={handleDetail}

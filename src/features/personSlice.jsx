@@ -38,6 +38,29 @@ export const fetchPerson = createAsyncThunk(
         }
     }
 );
+export const createPerson = createAsyncThunk(
+    "person/create",
+    async (values = {}, { rejectWithValue }) => {
+        const apiUrl = config.apiUrl;
+
+        try {
+            const response = await axios.post(
+                `${apiUrl}/person/create`,
+                values,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            return response.data;
+        } catch (err) {
+            if (!err.response) throw err;
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
 
 export const updatePerson = createAsyncThunk(
     "person/update",
@@ -70,12 +93,15 @@ export const updatePerson = createAsyncThunk(
     }
 );
 
+
+
 const personSlice = createSlice({
     name: "person",
     initialState,
     reducers: {},
     extraReducers: (builder) => {
         builder
+            // Fetch
             .addCase(fetchPerson.pending, (state) => {
                 state.loading = true;
                 state.data = null;
@@ -90,8 +116,38 @@ const personSlice = createSlice({
                 state.loading = false;
                 state.data = null;
                 state.errorMessage = action.payload?.errors || "Failed to fetch person";
+            })
+
+            // Update
+            .addCase(updatePerson.pending, (state) => {
+                state.loading = true;
+                state.errorMessage = null;
+            })
+            .addCase(updatePerson.fulfilled, (state, action) => {
+                state.loading = false;
+                state.data = action.payload.data;
+                state.errorMessage = null;
+            })
+            .addCase(updatePerson.rejected, (state, action) => {
+                state.loading = false;
+                state.errorMessage = action.payload?.errors || "Failed to update person";
+            })
+
+            // Create
+            .addCase(createPerson.pending, (state) => {
+                state.loading = true;
+                state.errorMessage = null;
+            })
+            .addCase(createPerson.fulfilled, (state, action) => {
+                state.loading = false;
+                state.data = action.payload.data;
+                state.errorMessage = null;
+            })
+            .addCase(createPerson.rejected, (state, action) => {
+                state.loading = false;
+                state.errorMessage = action.payload?.errors || "Failed to create person";
             });
-    }
+    },
 });
 
 

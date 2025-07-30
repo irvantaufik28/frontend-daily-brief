@@ -12,6 +12,9 @@ import { Button } from "react-bootstrap"
 import config from "../../../config"
 import { AiOutlineDelete, AiOutlineEdit, AiOutlineEye } from "react-icons/ai"
 import { SiMinutemailer } from "react-icons/si"
+import { FiRefreshCw } from "react-icons/fi"
+import { BiMailSend } from "react-icons/bi";
+
 
 const ReportListEmail = forwardRef((props, ref) => {
     const apiUrl = config.apiUrl + "/report"
@@ -91,29 +94,42 @@ const ReportListEmail = forwardRef((props, ref) => {
                 accessor: "",
                 Cell: ({ row }) => {
                     const { emailStatus } = row.values;
-                    const isDeleteDisabled = emailStatus === "SUCCESS";
-                    const isEditDisabled = emailStatus === "SUCCESS";
+                    const isEmailSuccess = emailStatus === "SUCCESS";
 
                     return (
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
 
-                            <SiMinutemailer
-
-                                onClick={() => {
-                                    if (!isDeleteDisabled) props.onAction(row.values);
-                                }}
+                            <AiOutlineEye
+                                onClick={() => props.onDetail(row.values)}
                                 style={{
-                                    color: isDeleteDisabled ? "#6c757d" : "#dc3545", // abu jika disable
+                                    color: "#0d6efd", // biru
                                     fontSize: "1.2rem",
-                                    cursor: isDeleteDisabled ? "not-allowed" : "pointer",
-                                    opacity: isDeleteDisabled ? 0.5 : 1,
+                                    cursor: "pointer",
                                 }}
-                                title={
-                                    isDeleteDisabled
-                                        ? "Cannot delete when email status is COMPLETED"
-                                        : "Delete"
-                                }
+                                title="View Detail"
                             />
+                            {isEmailSuccess ? (
+                                <FiRefreshCw
+                                    onClick={() => props.onResend(row.values)}
+                                    style={{
+                                        color: "#17a2b8",
+                                        fontSize: "1.2rem",
+                                        cursor: "pointer",
+                                    }}
+                                    title="Resend Email"
+                                />
+                            ) : (
+                                <BiMailSend
+                                    onClick={() => props.onSend(row.values)}
+                                    style={{
+                                        color: "#dc3545",
+                                        fontSize: "1.5rem",
+                                        cursor: "pointer",
+                                    }}
+                                    title="Send Email"
+                                />
+                            )}
+
                         </div>
                     );
                 },
@@ -219,7 +235,10 @@ const ReportListEmail = forwardRef((props, ref) => {
 
 ReportListEmail.defaultProps = {
 
-    onAction: (data) => { },
+    onSend: (data) => { },
+    onResend: (data) => { },
+    onDetail: (data) => { },
+
 }
 
 export default ReportListEmail

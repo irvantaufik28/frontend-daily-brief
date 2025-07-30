@@ -3,7 +3,7 @@ import { Button, Form } from "react-bootstrap";
 import "../styles/reportformfilter.css";
 import CardTitleFormFilter from "../../../components/Card/CardTitleFormFilter";
 
-const ReportFromFilter = ({ onFilter }) => {
+const ReportFormFilterSendEmail = ({ onFilter }) => {
     // Dummy data
     const companyList = [
         { id: 1, name: "PT. Indah Sari" },
@@ -11,11 +11,6 @@ const ReportFromFilter = ({ onFilter }) => {
         { id: 3, name: "PT. Greenlab" },
     ];
 
-
-    const projectList = [
-        { id: 1, name: "Sistem Pelaporan Kinerja" },
-        { id: 2, name: "Hoterip" },
-    ];
 
     const peopleList = [
         { id: 5, name: "Irvan Taufik" },
@@ -25,7 +20,7 @@ const ReportFromFilter = ({ onFilter }) => {
 
     const [filters, setFilters] = useState({
         reportDate: "",
-        project: "",
+        EmailStatus: "",
         company_id: "",
         person_id: "",
     });
@@ -45,7 +40,7 @@ const ReportFromFilter = ({ onFilter }) => {
     const handleReset = () => {
         const resetFilters = {
             reportDate: "",
-            project: "",
+            EmailStatus: "",
             company_id: "",
             person_id: "",
         };
@@ -77,6 +72,23 @@ const ReportFromFilter = ({ onFilter }) => {
                     </div>
 
                     <div className="col-md-3">
+                        <Form.Group controlId="EmailStatus">
+                            <Form.Label className="form-filter-label">Email Status</Form.Label>
+                            <Form.Control
+                                as="select"
+                                name="EmailStatus"
+                                value={filters.EmailStatus}
+                                onChange={handleChange}
+                            >
+                                <option value="">-- All --</option>
+                                <option value="PENDING">PENDING</option>
+                                <option value="SUCCESS">SUCCESS</option>
+                                <option value="FAILED">FAILED</option>
+                            </Form.Control>
+                        </Form.Group>
+                    </div>
+
+                    <div className="col-md-3">
                         <Form.Group controlId="company_id">
                             <Form.Label className="form-filter-label">Company</Form.Label>
                             <Form.Control
@@ -94,25 +106,6 @@ const ReportFromFilter = ({ onFilter }) => {
                             </Form.Control>
                         </Form.Group>
                     </div>
-
-                    <div className="col-md-3">
-                        <Form.Group controlId="project">
-                            <Form.Label className="form-filter-label">Project</Form.Label>
-                            <Form.Control
-                                as="select"
-                                name="Project"
-                                value={filters.project}
-                                onChange={handleChange}
-                            >
-                                {projectList.map((project) => (
-                                    <option key={project.id} value={project.id}>
-                                        {project.name}
-                                    </option>
-                                ))}
-                            </Form.Control>
-                        </Form.Group>
-                    </div>
-
 
                     <div className="col-md-3">
                         <Form.Group controlId="reportDate">
@@ -140,4 +133,4 @@ const ReportFromFilter = ({ onFilter }) => {
     );
 };
 
-export default ReportFromFilter;
+export default ReportFormFilterSendEmail;
