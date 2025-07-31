@@ -1,31 +1,76 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import "../styles/reportformfilter.css";
 import CardTitleFormFilter from "../../../components/Card/CardTitleFormFilter";
+import Select from "react-select";
+import axios from "axios";
+import config from "../../../config";
 
 const ReportFormFilterSendEmail = ({ onFilter }) => {
-    // Dummy data
-    const companyList = [
-        { id: 1, name: "PT. Indah Sari" },
-        { id: 2, name: "PT. Coderein" },
-        { id: 3, name: "PT. Greenlab" },
-    ];
+    const [companyOptions, setCompanyOptions] = useState([]);
+    const [personOptions, setPersonOptions] = useState([]);
+    const [isLoadingCompany, setIsLoadingCompany] = useState(true);
+    const [isLoadingPerson, setIsLoadingPerson] = useState(true);
 
-
-    const peopleList = [
-        { id: 5, name: "Irvan Taufik" },
-        { id: 2, name: "Ayu Puspita" },
-        { id: 3, name: "Budi Santoso" },
-    ];
+    const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1];
 
     const [filters, setFilters] = useState({
         reportDate: "",
         EmailStatus: "",
-        company_id: "",
-        person_id: "",
+        companyId: null,
+        personId: null,
     });
 
-    const handleChange = (e) => {
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            try {
+                const res = await axios.get(config.apiUrl + "/company-list", {
+                    headers: { Authorization: token },
+                });
+                const mapped = res.data.data.map((company) => ({
+                    value: company.id,
+                    label: company.name,
+                }));
+                setCompanyOptions(mapped);
+            } catch (error) {
+                console.error("Failed to fetch companies", error);
+            } finally {
+                setIsLoadingCompany(false);
+            }
+        };
+
+        const fetchPersons = async () => {
+            try {
+                const res = await axios.get(config.apiUrl + "/person-list", {
+                    headers: { Authorization: token },
+                });
+                const mapped = res.data.data.map((person) => ({
+                    value: person.id,
+                    label: person.fullName,
+                }));
+                setPersonOptions(mapped);
+            } catch (error) {
+                console.error("Failed to fetch persons", error);
+            } finally {
+                setIsLoadingPerson(false);
+            }
+        };
+
+        fetchCompanies();
+        fetchPersons();
+    }, [token]);
+
+    const handleSelectChange = (name, selected) => {
+        setFilters((prev) => ({
+            ...prev,
+            [name]: selected,
+        }));
+    };
+
+    const handleInputChange = (e) => {
         setFilters({
             ...filters,
             [e.target.name]: e.target.value,
@@ -34,18 +79,27 @@ const ReportFormFilterSendEmail = ({ onFilter }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onFilter(filters);
+        onFilter({
+            reportDate: filters.reportDate,
+            EmailStatus: filters.EmailStatus,
+            companyId: filters.companyId?.value || null,
+            personId: filters.personId?.value || null,
+        });
     };
 
     const handleReset = () => {
-        const resetFilters = {
+        setFilters({
             reportDate: "",
             EmailStatus: "",
-            company_id: "",
-            person_id: "",
-        };
-        setFilters(resetFilters);
-        onFilter(resetFilters);
+            companyId: null,
+            personId: null,
+        });
+        onFilter({
+            reportDate: "",
+            EmailStatus: "",
+            companyId: null,
+            personId: null,
+        });
     };
 
     return (
@@ -53,32 +107,27 @@ const ReportFormFilterSendEmail = ({ onFilter }) => {
             <Form onSubmit={handleSubmit} className="mb-3">
                 <div className="row align-items-end person-coloum-filter">
                     <div className="col-md-3">
-                        <Form.Group controlId="person_id">
+                        <Form.Group>
                             <Form.Label className="form-filter-label">Name</Form.Label>
-                            <Form.Control
-                                as="select"
-                                name="person_id"
-                                value={filters.person_id}
-                                onChange={handleChange}
-                            >
-                                <option value="">-- All People --</option>
-                                {peopleList.map((person) => (
-                                    <option key={person.id} value={person.id}>
-                                        {person.name}
-                                    </option>
-                                ))}
-                            </Form.Control>
+                            <Select
+                                options={personOptions}
+                                isLoading={isLoadingPerson}
+                                isClearable
+                                placeholder="Select name"
+                                onChange={(selected) => handleSelectChange("personId", selected)}
+                                value={filters.personId}
+                            />
                         </Form.Group>
                     </div>
 
                     <div className="col-md-3">
-                        <Form.Group controlId="EmailStatus">
+                        <Form.Group>
                             <Form.Label className="form-filter-label">Email Status</Form.Label>
                             <Form.Control
                                 as="select"
                                 name="EmailStatus"
                                 value={filters.EmailStatus}
-                                onChange={handleChange}
+                                onChange={handleInputChange}
                             >
                                 <option value="">-- All --</option>
                                 <option value="PENDING">PENDING</option>
@@ -89,32 +138,27 @@ const ReportFormFilterSendEmail = ({ onFilter }) => {
                     </div>
 
                     <div className="col-md-3">
-                        <Form.Group controlId="company_id">
+                        <Form.Group>
                             <Form.Label className="form-filter-label">Company</Form.Label>
-                            <Form.Control
-                                as="select"
-                                name="company_id"
-                                value={filters.company_id}
-                                onChange={handleChange}
-                            >
-                                <option value="">-- All Companies --</option>
-                                {companyList.map((company) => (
-                                    <option key={company.id} value={company.id}>
-                                        {company.name}
-                                    </option>
-                                ))}
-                            </Form.Control>
+                            <Select
+                                options={companyOptions}
+                                isLoading={isLoadingCompany}
+                                isClearable
+                                placeholder="Select company"
+                                onChange={(selected) => handleSelectChange("companyId", selected)}
+                                value={filters.companyId}
+                            />
                         </Form.Group>
                     </div>
 
                     <div className="col-md-3">
-                        <Form.Group controlId="reportDate">
+                        <Form.Group>
                             <Form.Label className="form-filter-label">Report Date</Form.Label>
                             <Form.Control
                                 type="date"
                                 name="reportDate"
                                 value={filters.reportDate}
-                                onChange={handleChange}
+                                onChange={handleInputChange}
                             />
                         </Form.Group>
                     </div>

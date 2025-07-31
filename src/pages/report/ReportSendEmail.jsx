@@ -9,7 +9,7 @@ import ReportDetailModal from "./components/modals/ReportDetailModal";
 import ReportFormFilterSendEmail from "./components/ReportFormFilterSendEmail";
 
 const ReportSendEmail = () => {
-  const refReportList = useRef();
+  const refReportListEmail = useRef();
   const dispatch = useDispatch();
 
   const [selectedReportId, setSelectedReportId] = useState(null);
@@ -60,7 +60,7 @@ const ReportSendEmail = () => {
         "success"
       );
 
-      refReportList.current.refreshData();
+      refReportListEmail.current.refreshData();
     } catch (error) {
       console.error(error);
       Swal.fire("Error", error?.message || "Failed to send email.", "error");
@@ -81,8 +81,9 @@ const ReportSendEmail = () => {
 
   return (
     <>
-      <ReportFormFilterSendEmail onFilter={(data) => refReportList.current.doFilter(data)} />
+      <ReportFormFilterSendEmail onFilter={(data) => refReportListEmail.current.doFilter(data)} />
       <ReportListEmail
+        ref={refReportListEmail}
         onSend={(data) => handleSendOrResendEmail(data, false)}
         onResend={(data) => handleSendOrResendEmail(data, true)}
         onDetail={handleDetail}
