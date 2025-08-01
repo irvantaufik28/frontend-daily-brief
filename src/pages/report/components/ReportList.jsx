@@ -87,6 +87,42 @@ const ReportList = forwardRef((props, ref) => {
                 }
             },
             {
+                Header: "Send Report Status",
+                accessor: "emailStatus",
+                Cell: ({ value }) => {
+                    const getStatusStyle = (status) => {
+                        let backgroundColor = "#6c757d"; // default gray
+
+                        switch (status) {
+                            case "PENDING":
+                                backgroundColor = "#ffc107"; // yellow
+                                break;
+                            case "SUCCESS":
+                                backgroundColor = "#198754"; // green
+                                break;
+                            case "FAILED":
+                                backgroundColor = "#dc3545"; // red
+                                break;
+                            default:
+                                backgroundColor = "#6c757d"; // gray
+                        }
+
+                        return {
+                            padding: "4px 10px",
+                            borderRadius: "999px",
+                            color: "white",
+                            display: "inline-block",
+                            fontWeight: "bold",
+                            fontSize: "0.75rem",
+                            textTransform: "uppercase",
+                            backgroundColor,
+                        };
+                    };
+
+                    return <span style={getStatusStyle(value)}>{value}</span>;
+                },
+            },
+            {
                 Header: "Action",
                 accessor: "",
                 Cell: ({ row }) => {

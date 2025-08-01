@@ -20,52 +20,51 @@ const ReportSendEmail = () => {
   );
 
 
-  const handleSendOrResendEmail = async (data, isResend = false) => {
-    const id = data?.id;
-    const { data: report, loading, errorMessage: error } = useSelector(
-      (state) => state.report
-    );
-    if (!id) {
-      Swal.fire("Error", "Invalid report ID", "error");
-      return;
-    }
+const handleSendOrResendEmail = async (data, isResend = false) => {
+  const id = data?.id;
 
-    const confirm = await Swal.fire({
-      title: isResend ? "Resend Email?" : "Send Email?",
-      text: isResend
-        ? "This will resend the report via email to the recipient."
-        : "This will send the report via email to the intended recipient.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: isResend ? "Yes, resend it!" : "Yes, send it!",
-      cancelButtonText: "Cancel",
+  if (!id) {
+    Swal.fire("Error", "Invalid report ID", "error");
+    return;
+  }
+
+  const confirm = await Swal.fire({
+    title: isResend ? "Resend Email?" : "Send Email?",
+    text: isResend
+      ? "This will resend the report via email to the recipient."
+      : "This will send the report via email to the intended recipient.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: isResend ? "Yes, resend it!" : "Yes, send it!",
+    cancelButtonText: "Cancel",
+  });
+
+  if (!confirm.isConfirmed) return;
+
+  try {
+    Swal.fire({
+      title: isResend ? "Resending email..." : "Sending email...",
+      didOpen: () => Swal.showLoading(),
     });
 
-    if (!confirm.isConfirmed) return;
+    const response = await dispatch(
+      sendEmail({ id: data.id, subject: data.subject || "" })
+    ).unwrap();
 
-    try {
-      Swal.fire({
-        title: isResend ? "Resending email..." : "Sending email...",
-        didOpen: () => Swal.showLoading(),
-      });
+    Swal.fire(
+      "Sent!",
+      response?.message ||
+      (isResend ? "Email has been resent." : "Email has been sent."),
+      "success"
+    );
 
-      const response = await dispatch(
-        sendEmail({ id: data.id, subject: data.subject || "" })
-      ).unwrap();
+    refReportListEmail.current.refreshData();
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", error?.message || "Failed to send email.", "error");
+  }
+};
 
-      Swal.fire(
-        "Sent!",
-        response?.message ||
-        (isResend ? "Email has been resent." : "Email has been sent."),
-        "success"
-      );
-
-      refReportListEmail.current.refreshData();
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", error?.message || "Failed to send email.", "error");
-    }
-  };
 
   const handleDetail = (data) => {
     setSelectedReportId(data.id);
