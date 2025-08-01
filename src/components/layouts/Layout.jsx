@@ -69,17 +69,17 @@ const routes = [
         icon: <MdMessage />,
         subRoutes: [
             {
-                path: "/admin/user",
+                path: "/master-user",
                 name: "User",
                 icon: <FaUser />,
             },
             {
-                path: "/admin/role",
+                path: "/master-role",
                 name: "Role",
                 icon: <FaLock />,
             },
             {
-                path: "/admin/position",
+                path: "/master-position",
                 name: "Position",
                 icon: <FaMoneyBill />,
             },

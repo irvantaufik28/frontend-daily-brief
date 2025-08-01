@@ -18,6 +18,7 @@ import ReportCreatePage from "../pages/report/ReportCreatePage";
 import ReportDetailPage from "../pages/report/ReportDetailPage";
 import ReportSendEmail from "../pages/report/ReportSendEmail";
 import PersonCreatePage from "../pages/person/PersonCreatePage";
+import ReportDraftPage from "../pages/report/ReportDraftPage";
 
 const IndexRoutes = () => {
   return (
@@ -32,6 +33,7 @@ const IndexRoutes = () => {
             <Route path="manage-company" element={<CompanyPage />} />
             <Route path="manage-report" element={<ReportPage />} />
             <Route path="manage-report/send-email" element={< ReportSendEmail/>} />
+            <Route path="manage-report/draft" element={< ReportDraftPage/>} />
             <Route path="create-report" element={<ReportCreatePage />} />
             <Route path="report-update/:id" element={<ReportCreatePage />} />
             <Route path="report-detail/:id" element={<ReportDetailPage />} />
