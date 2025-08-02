@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { useDispatch, useSelector } from "react-redux";
 import { createReport, fetchReport } from "../../../features/reportSlice";
+import { fetchProjects, projectSelector } from "../../../features/projectSlice";
+import { clearMembers, fetchPersonProject, projectMemberSelector } from "../../../features/projectMemberSlice";
 
 const validationSchema = Yup.object({
   projectId: Yup.number().required("Project is required"),
@@ -20,21 +21,29 @@ const validationSchema = Yup.object({
 });
 
 const ReportFormInput = () => {
-  const { id } = useParams(); // <-- id report (jika edit)
+  const { id } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const reportData = useSelector((state) => state.report.data);
   const reportLoading = useSelector((state) => state.report.loading);
   const reportError = useSelector((state) => state.report.error);
-  const navigate = useNavigate();
+
+  const projects = useSelector(projectSelector.data);
+  const persons = useSelector((state) => state.projectMember.data);
+
   const [initialValues, setInitialValues] = useState({
-    projectId: "",
-    personId: "",
+    projectId: null,
+    personId: null,
     reportDate: "",
     reports: [{ workedHour: "", description: "" }],
   });
+
   const [loading, setLoading] = useState(!!id && reportLoading);
-  const [projects] = useState([{ id: 1, name: "Sistem Pelaporan Kinerja" }]);
-  const [persons] = useState([{ id: 1, name: "Irvan Taufik" }]);
+
+  useEffect(() => {
+    dispatch(fetchProjects());
+  }, [dispatch]);
 
   useEffect(() => {
     if (id) {
@@ -43,20 +52,21 @@ const ReportFormInput = () => {
   }, [id, dispatch]);
 
   useEffect(() => {
-    if (id && reportData && Array.isArray(reportData.ReportDetail)) {
+    if (id && reportData?.ReportDetail?.length) {
       setInitialValues({
-        projectId: reportData.projectId ?? "",
-        personId: reportData.personId ?? "",
-        reportDate: reportData.reportDate?.slice(0, 10) ?? "",
+        projectId: reportData.projectId,
+        personId: reportData.personId,
+        reportDate: reportData.reportDate?.slice(0, 10),
         reports: reportData.ReportDetail.map((item) => ({
           workedHour: item.workedHour,
           description: item.description,
         })),
       });
+
+      dispatch(fetchPersonProject({ projectId: reportData.projectId }));
       setLoading(false);
     }
-  }, [reportData, id]);
-
+  }, [reportData, id, dispatch]);
 
   useEffect(() => {
     if (reportError) {
@@ -67,7 +77,7 @@ const ReportFormInput = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     const confirm = await Swal.fire({
-      title: "Create Report?",
+      title: id ? "Update Report?" : "Create Report?",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Yes",
@@ -80,18 +90,17 @@ const ReportFormInput = () => {
 
     try {
       Swal.fire({ title: "Submitting...", didOpen: () => Swal.showLoading() });
+
       const payload = {
-        ...(id && { id }), // hanya kirim id jika ada (mode update)
+        ...(id && { id }),
         projectId: values.projectId,
         personId: values.personId,
         reportDate: values.reportDate,
         reports: values.reports,
       };
 
-      // Hanya buat baru (no update)
       await dispatch(createReport(payload)).unwrap();
-
-      await Swal.fire("Success", "Report created", "success");
+      await Swal.fire("Success", id ? "Report updated" : "Report created", "success");
       navigate("/manage-report");
     } catch (err) {
       console.error(err);
@@ -100,8 +109,6 @@ const ReportFormInput = () => {
       setSubmitting(false);
     }
   };
-
-
 
   if (loading) return <div className="p-4">Loading...</div>;
 
@@ -114,48 +121,71 @@ const ReportFormInput = () => {
         onSubmit={handleSubmit}
         enableReinitialize
       >
-        {({ values, isSubmitting }) => (
+        {({ values, setFieldValue, isSubmitting }) => (
           <Form>
+            {/* Project */}
             <div className="mb-3">
               <label>Project</label>
-              <Field as="select" name="projectId" className="form-control">
+              <Field
+                as="select"
+                name="projectId"
+                className="form-control"
+                onChange={(e) => {
+                  const selectedId = parseInt(e.target.value);
+                  setFieldValue("projectId", selectedId);
+                  setFieldValue("personId", null);
+
+                  dispatch(clearMembers());
+                  if (selectedId) {
+                    dispatch(fetchPersonProject({ projectId: selectedId }));
+                  }
+                }}
+              >
                 <option value="">Select Project</option>
-                {projects.map((p) => (
+                {projects?.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name}
+                    {p.title}
                   </option>
                 ))}
               </Field>
               <ErrorMessage name="projectId" component="div" className="text-danger" />
             </div>
 
+            {/* Person */}
             <div className="mb-3">
               <label>Person</label>
-              <Field as="select" name="personId" className="form-control">
+              <Field
+                as="select"
+                name="personId"
+                className="form-control"
+                disabled={!values.projectId}
+              >
                 <option value="">Select Person</option>
                 {persons.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name}
+                    {p.fullName}
                   </option>
                 ))}
               </Field>
               <ErrorMessage name="personId" component="div" className="text-danger" />
             </div>
 
+            {/* Report Date */}
             <div className="mb-3">
               <label>Report Date</label>
               <Field type="date" name="reportDate" className="form-control" />
               <ErrorMessage name="reportDate" component="div" className="text-danger" />
             </div>
 
+            {/* Report Entries */}
             <FieldArray name="reports">
               {({ push, remove }) => (
                 <div>
                   <h5>Report Entries</h5>
                   {values.reports.map((report, index) => (
-                    <div className="border p-3 mb-" key={index}>
+                    <div className="border p-3 mb-3" key={index}>
                       <div className="row">
-                        <div className="col-md-1">
+                        <div className="col-md-2">
                           <label>Worked Hour</label>
                           <Field
                             as="select"
@@ -175,13 +205,13 @@ const ReportFormInput = () => {
                             className="text-danger"
                           />
                         </div>
-                        <div className="col-md-9">
+                        <div className="col-md-8">
                           <label>Description</label>
                           <Field
                             as="textarea"
                             name={`reports.${index}.description`}
                             className="form-control"
-                            rows={4} // bisa diubah ke 6 atau 8 jika ingin lebih besar
+                            rows={3}
                             placeholder="Describe the work..."
                           />
                           <ErrorMessage
@@ -193,7 +223,7 @@ const ReportFormInput = () => {
                         <div className="col-md-2 d-flex align-items-end">
                           <button
                             type="button"
-                            className="btn btn-danger"
+                            className="btn btn-danger w-100"
                             onClick={() => remove(index)}
                           >
                             Remove
@@ -204,8 +234,8 @@ const ReportFormInput = () => {
                   ))}
                   <button
                     type="button"
-                    className="btn btn-outline-primary"
-                    onClick={() => push({ workedHour: "2", description: "" })}
+                    className="btn btn-outline-primary mt-2"
+                    onClick={() => push({ workedHour: "", description: "" })}
                   >
                     + Add Report
                   </button>
@@ -213,6 +243,7 @@ const ReportFormInput = () => {
               )}
             </FieldArray>
 
+            {/* Actions */}
             <div className="mt-4 d-flex gap-2">
               <button
                 type="submit"
@@ -221,7 +252,6 @@ const ReportFormInput = () => {
               >
                 {isSubmitting ? "Submitting..." : id ? "Update" : "Create"}
               </button>
-
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -231,7 +261,6 @@ const ReportFormInput = () => {
                 Cancel
               </button>
             </div>
-
           </Form>
         )}
       </Formik>

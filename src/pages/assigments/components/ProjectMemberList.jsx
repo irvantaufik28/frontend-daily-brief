@@ -11,6 +11,7 @@ import BasicTable from "../../../components/table/BasicTable"
 import { Button } from "react-bootstrap"
 import config from "../../../config"
 import { AiOutlineEye } from "react-icons/ai"
+import { MdOutlinePersonOff } from "react-icons/md";
 
 const ProjectMemberList = forwardRef((props, ref) => {
   const apiUrl = config.apiUrl + "/project-member"
@@ -35,7 +36,30 @@ const ProjectMemberList = forwardRef((props, ref) => {
       {
         Header: "Assigned At",
         accessor: 'assignedAt'
-      }
+      },
+      {
+        Header: "Action",
+        accessor: "",
+        Cell: ({ row }) => (
+          <>
+            <div style={{
+              // display: "flex", justifyContent: "center" 
+            }}>
+              <MdOutlinePersonOff
+
+                 onClick={() => props.onUnassign(row.original)}
+                style={{
+                  color: "red",
+                  fontSize: "1.2rem",
+                  cursor: "pointer"
+                }}
+                title="View Detail"
+              />
+            </div>
+            
+          </>
+        ),
+      },
     ],
     [props]
   )
@@ -156,9 +180,7 @@ const ProjectMemberList = forwardRef((props, ref) => {
 })
 
 ProjectMemberList.defaultProps = {
-  onDetail: (data) => { },
-  onEdit: (data) => { },
-  onDelete: (data) => { },
+  onUnassign: (data) => { },
 }
 
 export default ProjectMemberList
