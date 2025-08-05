@@ -19,11 +19,25 @@ const CompanyPage = () => {
       };
 
       const handleModalSubmit = async (formData) => {
+            const token = document.cookie
+                  .split("; ")
+                  .find((row) => row.startsWith("token="))
+                  ?.split("=")[1];
+
             try {
-                  const token = document.cookie
-                        .split("; ")
-                        .find((row) => row.startsWith("token="))
-                        ?.split("=")[1];
+                  // Jika edit, tampilkan konfirmasi dulu
+                  if (editingCompany) {
+                        const result = await Swal.fire({
+                              title: 'Are you sure?',
+                              text: "Do you want to update this company?",
+                              icon: 'warning',
+                              showCancelButton: true,
+                              confirmButtonText: 'Yes, update it!',
+                              cancelButtonText: 'Cancel'
+                        });
+
+                        if (!result.isConfirmed) return;
+                  }
 
                   if (editingCompany) {
                         await axios.patch(`${config.apiUrl}/company/update/${editingCompany.id}`, formData, {
@@ -54,6 +68,7 @@ const CompanyPage = () => {
                   });
             }
       };
+
 
 
       const handleCreateUpdate = async (data) => {
