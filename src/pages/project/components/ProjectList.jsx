@@ -10,7 +10,7 @@ import axios from "axios"
 import BasicTable from "../../../components/table/BasicTable"
 import { Button } from "react-bootstrap"
 import config from "../../../config"
-import { AiOutlineEye } from "react-icons/ai"
+import { AiOutlineDelete, AiOutlineEdit, AiOutlineEye } from "react-icons/ai"
 
 const ProjectList = forwardRef((props, ref) => {
   const apiUrl = config.apiUrl + "/project"
@@ -79,39 +79,37 @@ const ProjectList = forwardRef((props, ref) => {
         Header: "Action",
         accessor: "",
         Cell: ({ row }) => (
-          <>
-            <div style={{
-              // display: "flex", justifyContent: "center" 
-            }}>
-              <AiOutlineEye
-                onClick={() => props.onDetail(row.values)}
-                style={{
-                  color: "black",
-                  fontSize: "1.2rem",
-                  cursor: "pointer"
-                }}
-                title="View Detail"
-              />
-            </div>
-            {/* <Button
-              variant="info"
-              size="sm"
-              className="me-2"
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            <AiOutlineEye
+              onClick={() => props.onDetail(row.values)}
+              style={{
+                color: "#0d6efd", // bootstrap primary
+                fontSize: "1.2rem",
+                cursor: "pointer",
+              }}
+              title="View Detail"
+            />
+            <AiOutlineEdit
               onClick={() => props.onEdit(row.values)}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
+              style={{
+                color: "#0dcaf0", // bootstrap info
+                fontSize: "1.2rem",
+                cursor: "pointer",
+              }}
+              title="Edit"
+            />
+            <AiOutlineDelete
               onClick={() => props.onDelete(row.values)}
-            >
-              Delete
-            </Button> */}
-          </>
+              style={{
+                color: "#dc3545", // bootstrap danger
+                fontSize: "1.2rem",
+                cursor: "pointer",
+              }}
+              title="Delete"
+            />
+          </div>
         ),
-        // headerClassName: "text-center",
-      },
+      }
     ],
     [props]
   )
