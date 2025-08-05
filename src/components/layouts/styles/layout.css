@@ -172,3 +172,13 @@ main {
 .global-coloum-filter {
    padding: 10px;
 }
+
+.custom-dropdown-item {
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-radius: 0.25rem;
+}
+
+.custom-dropdown-item:hover {
+  background-color: #f8f9fa !important; /* Bootstrap light */
+}

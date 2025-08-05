@@ -19,6 +19,8 @@ import ReportDetailPage from "../pages/report/ReportDetailPage";
 import ReportSendEmail from "../pages/report/ReportSendEmail";
 import PersonCreatePage from "../pages/person/PersonCreatePage";
 import ReportDraftPage from "../pages/report/ReportDraftPage";
+import ProfilePage from "../pages/profile/ProfilePage";
+import SettingPage from "../pages/profile/SettingPage";
 
 const IndexRoutes = () => {
   return (
@@ -45,6 +47,8 @@ const IndexRoutes = () => {
             <Route path="master-user" element={<UserPage />} />
             <Route path="master-role" element={<RolePage />} />
             <Route path="master-position" element={<PositionPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="setting" element={<SettingPage />} />
           </Route>
         </Route>
       </Routes>

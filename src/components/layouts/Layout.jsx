@@ -12,7 +12,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import SidebarMenu from "./SubMenu";
 import "./styles/layout.css";
-import Navbar from "./Navbar";
+import NavbarLayout from "./NavbarLayout";
 const routes = [
     {
         path: "/dashboard",
@@ -201,7 +201,7 @@ const Layout = () => {
                 </motion.div>
 
                 <div className="main-content">
-                    <Navbar />
+                    <NavbarLayout />
                     <div className="content-adjust">
 
                         <Outlet />
