@@ -4,7 +4,7 @@ import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
 import { useDispatch, useSelector } from "react-redux";
-import { createReport, fetchReport } from "../../../features/reportSlice";
+import { createReport, deleteReport, fetchReport } from "../../../features/reportSlice";
 import { fetchProjects, projectSelector } from "../../../features/projectSlice";
 import { clearMembers, fetchPersonProject, projectMemberSelector } from "../../../features/projectMemberSlice";
 
@@ -31,6 +31,7 @@ const ReportFormInput = () => {
 
   const projects = useSelector(projectSelector.data);
   const persons = useSelector((state) => state.projectMember.data);
+  const isDraft = reportData?.isDraft ?? false;
 
   const [initialValues, setInitialValues] = useState({
     projectId: null,
@@ -77,11 +78,16 @@ const ReportFormInput = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     const confirm = await Swal.fire({
-      title: id ? "Update Report?" : "Create Report?",
+      title: id
+        ? isDraft
+          ? "Approve Draft Report?"
+          : "Update Report?"
+        : "Create Report?",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Yes",
     });
+
 
     if (!confirm.isConfirmed) {
       setSubmitting(false);
@@ -97,11 +103,23 @@ const ReportFormInput = () => {
         personId: values.personId,
         reportDate: values.reportDate,
         reports: values.reports,
+        isDraft: false
       };
 
       await dispatch(createReport(payload)).unwrap();
-      await Swal.fire("Success", id ? "Report updated" : "Report created", "success");
-      navigate("/manage-report");
+      await Swal.fire(
+        "Success",
+        id
+          ? isDraft
+            ? "Draft Approved"
+            : "Report updated"
+          : isDraft
+            ? "Draft created"
+            : "Report created",
+        "success"
+      );
+
+      navigate(isDraft ? "/manage-report/draft" : "/manage-report");
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "Failed to submit report", "error");
@@ -110,11 +128,42 @@ const ReportFormInput = () => {
     }
   };
 
+  const handleDeleteDraft = async () => {
+    if (!id) {
+      Swal.fire("Error", "Invalid report ID", "error");
+      return;
+    }
+
+    const confirm = await Swal.fire({
+      title: "Are you sure?",
+      text: "This will reject the draft permanently.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, reject it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      Swal.fire({ title: "Deleting...", didOpen: () => Swal.showLoading() });
+
+      await dispatch(deleteReport(id)).unwrap();
+
+      await Swal.fire("Reject!", "Draft has been deleted.", "success");
+      navigate("/manage-report/draft");
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Failed to delete draft", "error");
+    }
+  };
+
+
   if (loading) return <div className="p-4">Loading...</div>;
 
   return (
     <div className="container mt-4">
-      <h3>{id ? "Edit Report" : "Create Report"}</h3>
+      <h3>{id ? (isDraft ? "Edit Draft Report" : "Edit Report") : "Create Report"}</h3>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
@@ -130,6 +179,7 @@ const ReportFormInput = () => {
                 as="select"
                 name="projectId"
                 className="form-control"
+                disabled={isDraft}
                 onChange={(e) => {
                   const selectedId = parseInt(e.target.value);
                   setFieldValue("projectId", selectedId);
@@ -158,7 +208,7 @@ const ReportFormInput = () => {
                 as="select"
                 name="personId"
                 className="form-control"
-                disabled={!values.projectId}
+                disabled={!values.projectId || isDraft}
               >
                 <option value="">Select Person</option>
                 {persons.map((p) => (
@@ -250,12 +300,22 @@ const ReportFormInput = () => {
                 className="btn btn-success"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Submitting..." : id ? "Update" : "Create"}
-              </button>
+                {isSubmitting
+                  ? "Submitting..."
+                  : id
+                    ? isDraft
+                      ? "Approve"
+                      : "Update"
+                    : "Create"} </button>
+              {id && isDraft && (
+                <button type="button" className="btn btn-danger" onClick={handleDeleteDraft}>
+                  Reject
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => navigate("/manage-report")}
+                onClick={() => navigate("/manage-report/draft")}
                 disabled={isSubmitting}
               >
                 Cancel
