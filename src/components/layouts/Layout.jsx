@@ -1,19 +1,20 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { FaBars, FaHome, FaLock, FaMoneyBill, FaUser } from "react-icons/fa";
-import { RiUserShared2Line } from "react-icons/ri";
+import { RiDraftFill, RiMailSendLine, RiUserShared2Line } from "react-icons/ri";
 import { RxDashboard } from "react-icons/rx";
 import { FaBuildingUser } from "react-icons/fa6";
 import { LuWorkflow } from "react-icons/lu";
 import { TbReport } from "react-icons/tb";
 import { MdMessage } from "react-icons/md";
-import { MdWorkspacesFilled } from "react-icons/md";
 import { HiMiniUserGroup } from "react-icons/hi2";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import SidebarMenu from "./SubMenu";
 import "./styles/layout.css";
 import NavbarLayout from "./NavbarLayout";
-const routes = [
+import { useDispatch, useSelector } from "react-redux";
+import { countDraftReport } from "../../features/reportSlice";
+const getRoutes  = (draftCount) => [
     {
         path: "/dashboard",
         name: "Dashboard",
@@ -32,13 +33,18 @@ const routes = [
             {
                 path: "/manage-report/send-email",
                 name: "Send Report",
-                icon: <FaLock />,
+                icon: <RiMailSendLine />,
             },
             {
                 path: "/manage-report/draft",
                 name: "Draft",
-                icon: <FaMoneyBill />,
-            },
+                icon: (
+                    <div className="icon-with-badge">
+                        <RiDraftFill />
+                        <span className="badge">{draftCount}</span>
+                    </div>
+                ),
+            }
         ],
     },
     {
@@ -89,6 +95,16 @@ const routes = [
 const Layout = () => {
     const [isOpen, setIsOpen] = useState(true);
     const toggle = () => setIsOpen(!isOpen);
+    const dispatch = useDispatch();
+
+    const draftCount = useSelector((state) => state.report.data || 0);
+    useEffect(() => {
+        dispatch(countDraftReport());
+    }, [dispatch]);
+
+
+   const routes = getRoutes(draftCount);
+
     const inputAnimation = {
         hidden: {
             width: 0,

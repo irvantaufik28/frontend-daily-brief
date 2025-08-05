@@ -182,3 +182,20 @@ main {
 .custom-dropdown-item:hover {
   background-color: #f8f9fa !important; /* Bootstrap light */
 }
+
+.icon-with-badge {
+  position: relative;
+  display: inline-block;
+}
+
+.icon-with-badge .badge {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background-color: red;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+}

@@ -35,6 +35,8 @@ export const fetchReport = createAsyncThunk(
     }
 );
 
+
+
 // Create or Update report
 export const createReport = createAsyncThunk(
     "report/createOrUpdate",
@@ -76,6 +78,27 @@ export const deleteReport = createAsyncThunk(
                 },
             });
             return { id, ...response.data };
+        } catch (err) {
+            if (!err.response) throw err;
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
+export const countDraftReport = createAsyncThunk(
+    "report/countDraft",
+    async (params = {}, { rejectWithValue }) => {
+        const apiUrl = config.apiUrl;
+
+        try {
+            const response = await axios.get(`${apiUrl}/report-draft-count`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Cache-Control": "no-cache",
+                },
+                params,
+            });
+            return response.data;
         } catch (err) {
             if (!err.response) throw err;
             return rejectWithValue(err.response.data);
@@ -143,7 +166,23 @@ const reportSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || "Failed to delete report detail";
             });
-
+        // fetchReport
+        builder
+            .addCase(countDraftReport.pending, (state) => {
+                state.loading = true;
+                state.data = null;
+                state.errorMessage = null;
+            })
+            .addCase(countDraftReport.fulfilled, (state, action) => {
+                state.loading = false;
+                state.data = action.payload.data;
+                state.errorMessage = null;
+            })
+            .addCase(countDraftReport.rejected, (state, action) => {
+                state.loading = false;
+                state.data = null;
+                state.errorMessage = action.payload?.errors || "Failed to fetch countDraftReport";
+            });
     },
 });
 
