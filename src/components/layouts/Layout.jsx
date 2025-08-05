@@ -97,11 +97,12 @@ const Layout = () => {
     const toggle = () => setIsOpen(!isOpen);
     const dispatch = useDispatch();
 
-    const draftCount = useSelector((state) => state.report.data || 0);
+    const draftCount = useSelector((state) => state.report.draftCount || 0);
     useEffect(() => {
         dispatch(countDraftReport());
     }, [dispatch]);
 
+    // const draftCount = 3
 
    const routes = getRoutes(draftCount);
 

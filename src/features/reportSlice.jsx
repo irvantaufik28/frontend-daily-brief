@@ -11,6 +11,7 @@ const initialState = {
     data: null,
     loading: false,
     errorMessage: null,
+    draftCount: 0, // NEW
 };
 
 // Fetch by ID
@@ -170,17 +171,16 @@ const reportSlice = createSlice({
         builder
             .addCase(countDraftReport.pending, (state) => {
                 state.loading = true;
-                state.data = null;
+                // Do not set state.data = null!
                 state.errorMessage = null;
             })
             .addCase(countDraftReport.fulfilled, (state, action) => {
                 state.loading = false;
-                state.data = action.payload.data;
+                state.draftCount = action.payload.data; // only store the count here
                 state.errorMessage = null;
             })
             .addCase(countDraftReport.rejected, (state, action) => {
                 state.loading = false;
-                state.data = null;
                 state.errorMessage = action.payload?.errors || "Failed to fetch countDraftReport";
             });
     },
