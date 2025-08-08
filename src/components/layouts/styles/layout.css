@@ -199,3 +199,7 @@ main {
   border-radius: 50%;
   font-weight: bold;
 }
+
+.notification-item:hover {
+  background-color: red; /* abu-abu terang */
+}

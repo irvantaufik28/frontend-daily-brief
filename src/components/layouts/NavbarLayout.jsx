@@ -9,21 +9,35 @@ import {
   FiCheck,
   FiMessageSquare,
   FiClock,
+  FiInfo,
 } from "react-icons/fi";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode as jwtDecode } from "jwt-decode";
-
+import { realtimeDb, ref, onValue } from '../../utils/FirebaseClient';
 import DEFAULT_PROFILE_PIC from '../../assets/img/default_profil.png';
-
+import { MdOutlineRateReview } from "react-icons/md";
+import config from '../../config';
+import axios from "axios";
+import { fetchReport } from "../../features/reportSlice";
+import { useDispatch, useSelector } from "react-redux";
 function NavbarLayout() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
-  const [cookies, setCookie, removeCookie] = useCookies(["token"]);
+  const [cookies, , removeCookie] = useCookies(["token"]);
   const [userData, setUserData] = useState({ fullName: "User", photo: "" });
+  const [notifications, setNotifications] = useState([]);
+  const apiUrl = config.apiUrl;
+  const { data: report, loading, errorMessage: error } = useSelector(
+    (state) => state.report
+  );
 
-  // Decode token once on mount
+
+  const [selectedNotif, setSelectedNotif] = useState(null);
+  const dispatch = useDispatch();
+
+  // Ambil user data dari token saat mount
   useEffect(() => {
     if (cookies.token) {
       try {
@@ -38,26 +52,51 @@ function NavbarLayout() {
     }
   }, [cookies.token]);
 
-  const dummyNotifications = [
-    {
-      id: 1,
-      title: "Request approved",
-      time: "5 mins ago",
-      icon: <FiCheck className="text-success" />,
-    },
-    {
-      id: 2,
-      title: "New message received",
-      time: "10 mins ago",
-      icon: <FiMessageSquare className="text-primary" />,
-    },
-    {
-      id: 3,
-      title: "Reminder: Submit report",
-      time: "1 hour ago",
-      icon: <FiClock className="text-warning" />,
-    },
-  ];
+  // Ambil notifikasi realtime dari Firebase
+  useEffect(() => {
+    const notificationsRef = ref(realtimeDb, 'notifications/admin');
+    const unsubscribe = onValue(notificationsRef, (snapshot) => {
+      const data = snapshot.val();
+
+      if (data) {
+        const notifArr = Object.entries(data).map(([key, val]) => ({
+          id: key,
+          ...val,
+        }));
+        notifArr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setNotifications(notifArr.slice(0, 10))
+      } else {
+        setNotifications([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+
+
+  useEffect(() => {
+    if (selectedNotif && report) {
+      // Jika report sudah tersedia setelah fetch
+      if (report.isDraft) {
+        navigate(`/report-update/${selectedNotif.objectId}`);
+      } else {
+        navigate(`/report-detail/${selectedNotif.objectId}`);
+      }
+      setSelectedNotif(null); // reset supaya tidak looping
+    }
+  }, [selectedNotif, report, navigate]);
+
+  const handleNotifClick = async (notif) => {
+    try {
+      await axios.patch(`${apiUrl}/notification/read/${notif.id}`);
+      setNotifOpen(false);
+      setSelectedNotif(notif);
+      dispatch(fetchReport({ id: notif.objectId }));
+    } catch (error) {
+      console.error('Failed to mark notification as read or fetch report:', error);
+    }
+  };
 
   const handleLogout = () => {
     removeCookie("token", {
@@ -65,7 +104,6 @@ function NavbarLayout() {
       sameSite: "Lax",
       secure: false,
     });
-
     window.location.href = "/";
   };
 
@@ -86,9 +124,14 @@ function NavbarLayout() {
               }}
             >
               <FiBell size={20} />
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: "0.65rem" }}>
-                {dummyNotifications.length}
-              </span>
+              {notifications.length > 0 && (
+                <span
+                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                  style={{ fontSize: "0.65rem" }}
+                >
+                  {notifications.filter(n => !n.read).length}
+                </span>
+              )}
             </div>
 
             <AnimatePresence>
@@ -104,21 +147,37 @@ function NavbarLayout() {
                     top: "120%",
                     right: 0,
                     zIndex: 1000,
-                    minWidth: 250,
-                    maxHeight: 300,
+                    minWidth: 300,
+                    maxHeight: 350,
                     overflowY: "auto",
                   }}
                 >
-                  {dummyNotifications.map((notif) => (
-                    <div key={notif.id} className="dropdown-item d-flex gap-2 align-items-start">
-                      <div style={{ fontSize: "1.2rem" }}>{notif.icon}</div>
-                      <div>
-                        <strong>{notif.title}</strong>
-                        <div className="text-muted small">{notif.time}</div>
+                  {notifications.length > 0 ? (
+                    notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        onClick={() => handleNotifClick(notif)}
+                        className="dropdown-item d-flex gap-2 align-items-start "
+                        style={{
+                          cursor: 'pointer',
+                          backgroundColor: notif.read ? '#f8f9fa' : 'white', // bg abu2 kalau sudah dibaca
+                          color: notif.read ? '#6c757d' : 'inherit', // teks abu kalau sudah dibaca
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e7c98fff')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <div style={{ fontSize: "1.2rem" }}>
+                          {notif.type === "Report" && <MdOutlineRateReview className="text-info" />}
+                          {!notif.type && <FiBell />}
+                        </div>
+                        <div>
+                          <strong>{notif.title}</strong>
+                          <div className="text-muted small">{new Date(notif.createdAt).toLocaleString()}</div>
+                          <div>{notif.body}</div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {dummyNotifications.length === 0 && (
+                    ))
+                  ) : (
                     <div className="dropdown-item text-muted text-center">
                       No notifications
                     </div>
@@ -184,8 +243,6 @@ function NavbarLayout() {
                   >
                     <FiLogOut /> Logout
                   </button>
-
-
                 </motion.div>
               )}
             </AnimatePresence>
