@@ -6,12 +6,15 @@ import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { createPerson } from "../../features/personSlice";
 import img from "../../assets/img/default_profil.png";
+import axios from "axios";
+import config from "../../config";
+
 const PersonCreatePage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [previewSource, setPreviewSource] = useState("");
     const [selectedFile, setSelectedFile] = useState(null);
-    const default_profil = img
+    const default_profil = img;
 
     const initialValues = {
         username: "",
@@ -48,41 +51,53 @@ const PersonCreatePage = () => {
         }
     };
 
+    // Fungsi upload image ke API menggunakan axios
     const handleUploadImage = async () => {
+        const apiUrl = config.apiUrl;
         if (!selectedFile) {
-            Swal.fire("No file", "Please select an image first.", "warning");
-            return;
+            throw new Error("No file selected");
+        }
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        const token = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("token="))
+            ?.split("=")[1];
+
+        const response = await axios.post(apiUrl + "/upload", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.data || !response.data.data || !response.data.data.url) {
+            throw new Error("Failed to upload image");
         }
 
-        try {
-            const formData = new FormData();
-            formData.append("file", selectedFile);
-
-            // Simulasi upload, ganti ini dengan API kamu jika ada
-            const fakeUploadedUrl = previewSource;
-
-            Swal.fire("Uploaded", "Image uploaded successfully", "success");
-            return fakeUploadedUrl;
-        } catch (err) {
-            Swal.fire("Error", "Failed to upload image", "error");
-        }
+        return response.data.data.url;
     };
 
     const handleSubmit = async (values, { setSubmitting }) => {
         try {
             let photoUrl = values.photo;
 
-            // Upload image jika ada file yang dipilih
             if (selectedFile) {
-                const uploadedUrl = await handleUploadImage();
-                photoUrl = uploadedUrl || values.photo;
+                Swal.fire({
+                    title: "Uploading image...",
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading(),
+                });
+                photoUrl = await handleUploadImage();
+                Swal.close();
             }
 
             const finalValues = { ...values, photo: photoUrl };
 
             await dispatch(createPerson(finalValues)).unwrap();
+
             await Swal.fire("Success", "Person has been created", "success");
-            navigate("/person");
+            navigate("/manage-person");
         } catch (error) {
             Swal.fire("Error", error.message || "Failed to create person", "error");
         } finally {
@@ -119,13 +134,6 @@ const PersonCreatePage = () => {
                                     onChange={handleFileInputChange}
                                     className="form-control mb-2"
                                 />
-                                <button
-                                    className="btn btn-primary"
-                                    type="button"
-                                    onClick={handleUploadImage}
-                                >
-                                    Upload new image
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -180,9 +188,29 @@ const PersonCreatePage = () => {
                                                     Position
                                                 </label>
                                                 <Field
+                                                    as="select"
                                                     name="position"
-                                                    type="text"
                                                     className="bd-form-control"
+                                                >
+                                                    <option value="">Select position</option>
+                                                    <option value="Frontend Developer">
+                                                        Frontend Developer
+                                                    </option>
+                                                    <option value="Backend Developer">
+                                                        Backend Developer
+                                                    </option>
+                                                    <option value="Fullstack Developer">
+                                                        Fullstack Developer
+                                                    </option>
+                                                    <option value="UI/UX Designer">UI/UX Designer</option>
+                                                    <option value="DevOps Engineer">DevOps Engineer</option>
+                                                    <option value="QA Engineer">QA Engineer</option>
+                                                    <option value="Project Manager">Project Manager</option>
+                                                </Field>
+                                                <ErrorMessage
+                                                    name="position"
+                                                    component="div"
+                                                    className="text-danger small"
                                                 />
                                             </div>
                                         </div>
@@ -193,9 +221,22 @@ const PersonCreatePage = () => {
                                                     Category
                                                 </label>
                                                 <Field
+                                                    as="select"
                                                     name="category"
-                                                    type="text"
                                                     className="bd-form-control"
+                                                >
+                                                    <option value="">Select category</option>
+                                                    <option value="PERMANENT">PERMANENT</option>
+                                                    <option value="FREELANCER">FREELANCER</option>
+                                                    <option value="OUTSOURCE">OUTSOURCE</option>
+                                                    <option value="INTERN">INTERN</option>
+                                                    <option value="PART_TIME">PART_TIME</option>
+                                                    <option value="CONTRACT">CONTRACT</option>
+                                                </Field>
+                                                <ErrorMessage
+                                                    name="category"
+                                                    component="div"
+                                                    className="text-danger small"
                                                 />
                                             </div>
                                             <div className="col-md-6">
@@ -209,6 +250,7 @@ const PersonCreatePage = () => {
                                                 />
                                             </div>
                                         </div>
+
 
                                         <div className="mb-3">
                                             <label className="small mb-1" htmlFor="email">

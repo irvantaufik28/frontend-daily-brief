@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
 import {
     fetchPerson,
     personSelector,
@@ -10,6 +11,7 @@ import {
 } from "../../../../features/personSlice";
 import default_profil from "../../../../assets/img/default_profil.png";
 import Swal from "sweetalert2";
+import config from "../../../../config";
 
 const validationSchema = Yup.object({
     username: Yup.string().required("Username is required"),
@@ -17,6 +19,8 @@ const validationSchema = Yup.object({
     email: Yup.string().email("Invalid email").required("Email is required"),
     phoneNumber: Yup.string().required("Phone number is required"),
     startDate: Yup.date().required("Start date is required"),
+    position: Yup.string().required("Position is required"),
+    category: Yup.string().required("Category is required"),
 });
 
 const TabPersonInfo = () => {
@@ -24,13 +28,13 @@ const TabPersonInfo = () => {
     const [previewSource, setPreviewSource] = useState(null);
     const [image, setImage] = useState(null);
     const dispatch = useDispatch();
-
+    const navigate = useNavigate();
     const data = useSelector(personSelector.data);
     const loading = useSelector(personSelector.loading);
     const errorMessage = useSelector(personSelector.errorMessage);
 
     useEffect(() => {
-        dispatch(fetchPerson({ id }));
+        if (id) dispatch(fetchPerson({ id }));
     }, [dispatch, id]);
 
     const initialValues = useMemo(() => {
@@ -65,30 +69,38 @@ const TabPersonInfo = () => {
     };
 
     const handleFileInputChange = (e) => {
-        const file = e.target.files[0];
-        setImage(file);
-        previewFile(file);
-    };
-
-    const handleUploadImage = async () => {
-        if (!image) return;
-
-        const formData = new FormData();
-        formData.append("file", image);
-        formData.append("type", "image");
-        formData.append("folder", "student_foto");
-
-        try {
-            await dispatch(updatePerson({ id, values: formData })).unwrap();
-            alert("Image uploaded successfully.");
-            dispatch(fetchPerson({ id }));
-        } catch (error) {
-            console.error(error);
-            alert("Failed to upload image.");
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+            setImage(file);
+            previewFile(file);
         }
     };
 
+    const handleUploadImage = async () => {
+        if (!image) return null;
 
+        const token = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("token="))
+            ?.split("=")[1];
+
+        const apiUrl = config.apiUrl;
+        const formData = new FormData();
+        formData.append("file", image);
+
+        try {
+            const response = await axios.post(apiUrl + "/upload", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return response.data?.data?.url || null;
+        } catch (error) {
+            console.error("Upload error:", error);
+            throw new Error("Failed to upload image");
+        }
+    };
 
     const handleSubmit = async (values, { setSubmitting }) => {
         const confirm = await Swal.fire({
@@ -112,28 +124,39 @@ const TabPersonInfo = () => {
                 text: "Please wait while we save your changes.",
                 allowOutsideClick: false,
                 allowEscapeKey: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                },
+                didOpen: () => Swal.showLoading(),
             });
 
-            await dispatch(updatePerson({ id, values })).unwrap();
+            let photoUrl = values.photo;
+
+            if (image) {
+                photoUrl = await handleUploadImage();
+            }
+
+            const finalValues = { ...values, photo: photoUrl };
+
+            await dispatch(updatePerson({ id, values: finalValues })).unwrap();
 
             await Swal.fire("Saved!", "The data has been updated.", "success");
-            dispatch(fetchPerson({ id }));
+            navigate("/manage-person");
         } catch (error) {
             console.error(error);
-            await Swal.fire("Error!", "Failed to save changes.", "error");
+            await Swal.fire(
+                "Error!",
+                error.message || "Failed to save changes.",
+                "error"
+            );
         } finally {
             setSubmitting(false);
         }
     };
 
-
-
     if (loading || !data) {
         return (
-            <div className="d-flex justify-content-center align-items-center" style={{ height: "200px" }}>
+            <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: "200px" }}
+            >
                 <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div>
@@ -171,13 +194,6 @@ const TabPersonInfo = () => {
                                     onChange={handleFileInputChange}
                                     className="form-control mb-2"
                                 />
-                                <button
-                                    className="btn btn-primary"
-                                    type="button"
-                                    onClick={handleUploadImage}
-                                >
-                                    Upload new image
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -232,9 +248,35 @@ const TabPersonInfo = () => {
                                                     Position
                                                 </label>
                                                 <Field
+                                                    as="select"
                                                     name="position"
-                                                    type="text"
                                                     className="bd-form-control"
+                                                >
+                                                    <option value="">Select position</option>
+                                                    <option value="Frontend Developer">
+                                                        Frontend Developer
+                                                    </option>
+                                                    <option value="Backend Developer">
+                                                        Backend Developer
+                                                    </option>
+                                                    <option value="Fullstack Developer">
+                                                        Fullstack Developer
+                                                    </option>
+                                                    <option value="UI/UX Designer">
+                                                        UI/UX Designer
+                                                    </option>
+                                                    <option value="DevOps Engineer">
+                                                        DevOps Engineer
+                                                    </option>
+                                                    <option value="QA Engineer">QA Engineer</option>
+                                                    <option value="Project Manager">
+                                                        Project Manager
+                                                    </option>
+                                                </Field>
+                                                <ErrorMessage
+                                                    name="position"
+                                                    component="div"
+                                                    className="text-danger small"
                                                 />
                                             </div>
                                         </div>
@@ -245,9 +287,22 @@ const TabPersonInfo = () => {
                                                     Category
                                                 </label>
                                                 <Field
+                                                    as="select"
                                                     name="category"
-                                                    type="text"
                                                     className="bd-form-control"
+                                                >
+                                                    <option value="">Select category</option>
+                                                    <option value="PERMANENT">PERMANENT</option>
+                                                    <option value="FREELANCER">FREELANCER</option>
+                                                    <option value="OUTSOURCE">OUTSOURCE</option>
+                                                    <option value="INTERN">INTERN</option>
+                                                    <option value="PART_TIME">PART_TIME</option>
+                                                    <option value="CONTRACT">CONTRACT</option>
+                                                </Field>
+                                                <ErrorMessage
+                                                    name="category"
+                                                    component="div"
+                                                    className="text-danger small"
                                                 />
                                             </div>
                                             <div className="col-md-6">

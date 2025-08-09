@@ -170,159 +170,183 @@ const ReportFormInput = () => {
         onSubmit={handleSubmit}
         enableReinitialize
       >
-        {({ values, setFieldValue, isSubmitting }) => (
-          <Form>
-            {/* Project */}
-            <div className="mb-3">
-              <label>Project</label>
-              <Field
-                as="select"
-                name="projectId"
-                className="form-control"
-                disabled={isDraft}
-                onChange={(e) => {
-                  const selectedId = parseInt(e.target.value);
-                  setFieldValue("projectId", selectedId);
-                  setFieldValue("personId", null);
+        {({ values, setFieldValue, isSubmitting }) => {
+          const totalHours = values.reports.reduce((sum, r) => {
+            const w = parseInt(r.workedHour);
+            return sum + (isNaN(w) ? 0 : w);
+          }, 0);
 
-                  dispatch(clearMembers());
-                  if (selectedId) {
-                    dispatch(fetchPersonProject({ projectId: selectedId }));
-                  }
-                }}
-              >
-                <option value="">Select Project</option>
-                {projects?.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title}
-                  </option>
-                ))}
-              </Field>
-              <ErrorMessage name="projectId" component="div" className="text-danger" />
-            </div>
+          return (
+            <Form>
+              <div className="row">
+                <div className="col-4">
+                  <div className="mb-3">
+                    <label>Project</label>
+                    <Field
+                      as="select"
+                      name="projectId"
+                      className="form-control"
+                      disabled={isDraft}
+                      onChange={(e) => {
+                        const selectedId = parseInt(e.target.value);
+                        setFieldValue("projectId", selectedId);
+                        setFieldValue("personId", null);
 
-            {/* Person */}
-            <div className="mb-3">
-              <label>Person</label>
-              <Field
-                as="select"
-                name="personId"
-                className="form-control"
-                disabled={!values.projectId || isDraft}
-              >
-                <option value="">Select Person</option>
-                {persons.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.fullName}
-                  </option>
-                ))}
-              </Field>
-              <ErrorMessage name="personId" component="div" className="text-danger" />
-            </div>
+                        dispatch(clearMembers());
+                        if (selectedId) {
+                          dispatch(fetchPersonProject({ projectId: selectedId }));
+                        }
+                      }}
+                    >
+                      <option value="">Select Project</option>
+                      {projects?.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.title}
+                        </option>
+                      ))}
+                    </Field>
+                    <ErrorMessage name="projectId" component="div" className="text-danger" />
+                  </div>
+                </div>
 
-            {/* Report Date */}
-            <div className="mb-3">
-              <label>Report Date</label>
-              <Field type="date" name="reportDate" className="form-control" />
-              <ErrorMessage name="reportDate" component="div" className="text-danger" />
-            </div>
+                <div className="col-4">
+                  <div className="mb-3">
+                    <label>Person</label>
+                    <Field
+                      as="select"
+                      name="personId"
+                      className="form-control"
+                      disabled={!values.projectId || isDraft}
+                    >
+                      <option value="">Select Person</option>
+                      {persons.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.fullName}
+                        </option>
+                      ))}
+                    </Field>
+                    <ErrorMessage name="personId" component="div" className="text-danger" />
+                  </div>
+                </div>
 
-            {/* Report Entries */}
-            <FieldArray name="reports">
-              {({ push, remove }) => (
-                <div>
-                  <h5>Report Entries</h5>
-                  {values.reports.map((report, index) => (
-                    <div className="border p-3 mb-3" key={index}>
-                      <div className="row">
-                        <div className="col-md-2">
-                          <label>Worked Hour</label>
-                          <Field
-                            as="select"
-                            name={`reports.${index}.workedHour`}
-                            className="form-control"
-                          >
-                            <option value="">Select hour</option>
-                            {[...Array(24)].map((_, i) => (
-                              <option key={i + 1} value={i + 1}>
-                                {i + 1} Hour
-                              </option>
-                            ))}
-                          </Field>
-                          <ErrorMessage
-                            name={`reports.${index}.workedHour`}
-                            component="div"
-                            className="text-danger"
-                          />
-                        </div>
-                        <div className="col-md-8">
-                          <label>Description</label>
-                          <Field
-                            as="textarea"
-                            name={`reports.${index}.description`}
-                            className="form-control"
-                            rows={3}
-                            placeholder="Describe the work..."
-                          />
-                          <ErrorMessage
-                            name={`reports.${index}.description`}
-                            component="div"
-                            className="text-danger"
-                          />
-                        </div>
-                        <div className="col-md-2 d-flex align-items-end">
-                          <button
-                            type="button"
-                            className="btn btn-danger w-100"
-                            onClick={() => remove(index)}
-                          >
-                            Remove
-                          </button>
+                <div className="col-3">
+                  <div className="mb-3">
+                    <label>Report Date</label>
+                    <Field type="date" name="reportDate" className="form-control" />
+                    <ErrorMessage name="reportDate" component="div" className="text-danger" />
+                  </div>
+                </div>
+
+                <div className="col-1">
+                  <div className="mb-3">
+                    <label>Total Hours</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={totalHours}
+                      disabled
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <FieldArray name="reports">
+                {({ push, remove }) => (
+                  <div>
+                    <h5>Report Entries</h5>
+                    {values.reports.map((report, index) => (
+                      <div className="border p-3 mb-3" key={index}>
+                        <div className="row">
+                          <div className="col-md-2">
+                            <label>Worked Hour</label>
+                            <Field
+                              as="select"
+                              name={`reports.${index}.workedHour`}
+                              className="form-control"
+                            >
+                              <option value="">Select hour</option>
+                              {[...Array(24)].map((_, i) => (
+                                <option key={i + 1} value={i + 1}>
+                                  {i + 1} Hour
+                                </option>
+                              ))}
+                            </Field>
+                            <ErrorMessage
+                              name={`reports.${index}.workedHour`}
+                              component="div"
+                              className="text-danger"
+                            />
+                          </div>
+                          <div className="col-md-8">
+                            <label>Description</label>
+                            <Field
+                              as="textarea"
+                              name={`reports.${index}.description`}
+                              className="form-control"
+                              rows={3}
+                              placeholder="Describe the work..."
+                            />
+                            <ErrorMessage
+                              name={`reports.${index}.description`}
+                              component="div"
+                              className="text-danger"
+                            />
+                          </div>
+                          <div className="col-md-2 d-flex align-items-end">
+                            <button
+                              type="button"
+                              className="btn btn-danger w-100"
+                              onClick={() => remove(index)}
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary mt-2"
-                    onClick={() => push({ workedHour: "", description: "" })}
-                  >
-                    + Add Report
-                  </button>
-                </div>
-              )}
-            </FieldArray>
+                    ))}
+                    <button
+                      type="button"
+                      className="btn btn-outline-primary mt-2"
+                      onClick={() => push({ workedHour: "", description: "" })}
+                    >
+                      + Add Report
+                    </button>
+                  </div>
+                )}
+              </FieldArray>
 
-            {/* Actions */}
-            <div className="mt-4 d-flex gap-2">
-              <button
-                type="submit"
-                className="btn btn-success"
-                disabled={isSubmitting}
-              >
-                {isSubmitting
-                  ? "Submitting..."
-                  : id
-                    ? isDraft
-                      ? "Approve"
-                      : "Update"
-                    : "Create"} </button>
-              {id && isDraft && (
-                <button type="button" className="btn btn-danger" onClick={handleDeleteDraft}>
-                  Reject
+              <div className="mt-4 d-flex gap-2">
+                <button
+                  type="submit"
+                  className="btn btn-success"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting
+                    ? "Submitting..."
+                    : id
+                      ? isDraft
+                        ? "Approve"
+                        : "Update"
+                      : "Create"}{" "}
                 </button>
-              )}
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => navigate("/manage-report/draft")}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-            </div>
-          </Form>
-        )}
+                {id && isDraft && (
+                  <button type="button" className="btn btn-danger" onClick={handleDeleteDraft}>
+                    Reject
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => navigate("/manage-report/draft")}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+              </div>
+            </Form>
+          );
+        }}
       </Formik>
     </div>
   );
