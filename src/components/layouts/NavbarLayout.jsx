@@ -1,4 +1,4 @@
-import { Navbar } from "react-bootstrap";
+import { Navbar, Spinner } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUser } from "react-icons/fa";
@@ -6,10 +6,6 @@ import {
   FiSettings,
   FiLogOut,
   FiBell,
-  FiCheck,
-  FiMessageSquare,
-  FiClock,
-  FiInfo,
 } from "react-icons/fi";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
@@ -21,18 +17,21 @@ import config from '../../config';
 import axios from "axios";
 import { fetchReport } from "../../features/reportSlice";
 import { useDispatch, useSelector } from "react-redux";
+
 function NavbarLayout() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [loadingNotif, setLoadingNotif] = useState(false);
+
   const navigate = useNavigate();
   const [cookies, , removeCookie] = useCookies(["token"]);
   const [userData, setUserData] = useState({ fullName: "User", photo: "" });
   const [notifications, setNotifications] = useState([]);
+
   const apiUrl = config.apiUrl;
   const { data: report, loading, errorMessage: error } = useSelector(
     (state) => state.report
   );
-
 
   const [selectedNotif, setSelectedNotif] = useState(null);
   const dispatch = useDispatch();
@@ -64,7 +63,7 @@ function NavbarLayout() {
           ...val,
         }));
         notifArr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setNotifications(notifArr.slice(0, 10))
+        setNotifications(notifArr.slice(0, 10));
       } else {
         setNotifications([]);
       }
@@ -73,21 +72,21 @@ function NavbarLayout() {
     return () => unsubscribe();
   }, []);
 
-
-
+  // Navigasi setelah report selesai di-fetch
   useEffect(() => {
     if (selectedNotif && report) {
-      // Jika report sudah tersedia setelah fetch
       if (report.isDraft) {
         navigate(`/report-update/${selectedNotif.objectId}`);
       } else {
         navigate(`/report-detail/${selectedNotif.objectId}`);
       }
-      setSelectedNotif(null); // reset supaya tidak looping
+      setSelectedNotif(null);
+      setLoadingNotif(false); // pastikan loading direset
     }
   }, [selectedNotif, report, navigate]);
 
   const handleNotifClick = async (notif) => {
+    setLoadingNotif(true);
     try {
       await axios.patch(`${apiUrl}/notification/read/${notif.id}`);
       setNotifOpen(false);
@@ -95,6 +94,7 @@ function NavbarLayout() {
       dispatch(fetchReport({ id: notif.objectId }));
     } catch (error) {
       console.error('Failed to mark notification as read or fetch report:', error);
+      setLoadingNotif(false);
     }
   };
 
@@ -124,7 +124,22 @@ function NavbarLayout() {
               }}
             >
               <FiBell size={20} />
-              {notifications.length > 0 && (
+              {loadingNotif && (
+                <Spinner
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    zIndex: 1100,
+                  }}
+                />
+              )}
+              {notifications.length > 0 && !loadingNotif && (
                 <span
                   className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                   style={{ fontSize: "0.65rem" }}
@@ -152,7 +167,13 @@ function NavbarLayout() {
                     overflowY: "auto",
                   }}
                 >
-                  {notifications.length > 0 ? (
+                  {loadingNotif && (
+                    <div className="text-center p-2">
+                      <Spinner animation="border" size="sm" /> Loading...
+                    </div>
+                  )}
+
+                  {!loadingNotif && (notifications.length > 0 ? (
                     notifications.map((notif) => (
                       <div
                         key={notif.id}
@@ -160,8 +181,8 @@ function NavbarLayout() {
                         className="dropdown-item d-flex gap-2 align-items-start "
                         style={{
                           cursor: 'pointer',
-                          backgroundColor: notif.read ? '#f8f9fa' : 'white', // bg abu2 kalau sudah dibaca
-                          color: notif.read ? '#6c757d' : 'inherit', // teks abu kalau sudah dibaca
+                          backgroundColor: notif.read ? '#f8f9fa' : 'white',
+                          color: notif.read ? '#6c757d' : 'inherit',
                         }}
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e7c98fff')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
@@ -181,7 +202,7 @@ function NavbarLayout() {
                     <div className="dropdown-item text-muted text-center">
                       No notifications
                     </div>
-                  )}
+                  ))}
                 </motion.div>
               )}
             </AnimatePresence>
