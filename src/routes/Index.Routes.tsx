@@ -21,6 +21,7 @@ import PersonCreatePage from "../pages/person/PersonCreatePage";
 import ReportDraftPage from "../pages/report/ReportDraftPage";
 import ProfilePage from "../pages/profile/ProfilePage";
 import SettingPage from "../pages/profile/SettingPage";
+import { HomePage } from "../pages/client/home/HomePage";
 
 const IndexRoutes = () => {
   return (
@@ -34,8 +35,11 @@ const IndexRoutes = () => {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="manage-company" element={<CompanyPage />} />
             <Route path="manage-report" element={<ReportPage />} />
-            <Route path="manage-report/send-email" element={< ReportSendEmail/>} />
-            <Route path="manage-report/draft" element={< ReportDraftPage/>} />
+            <Route
+              path="manage-report/send-email"
+              element={<ReportSendEmail />}
+            />
+            <Route path="manage-report/draft" element={<ReportDraftPage />} />
             <Route path="create-report" element={<ReportCreatePage />} />
             <Route path="report-update/:id" element={<ReportCreatePage />} />
             <Route path="report-detail/:id" element={<ReportDetailPage />} />
@@ -50,6 +54,11 @@ const IndexRoutes = () => {
             <Route path="profile" element={<ProfilePage />} />
             <Route path="setting" element={<SettingPage />} />
           </Route>
+        </Route>
+        <Route path="/" element={<Layout />}>
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="setting" element={<SettingPage />} />
+          <Route path="/home" element={< HomePage/>} />
         </Route>
       </Routes>
     </Router>

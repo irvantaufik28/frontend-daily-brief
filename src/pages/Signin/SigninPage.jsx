@@ -25,7 +25,7 @@ const SigninPage = () => {
       if (user.role === 'ADMIN') {
         navigate('/dashboard');
       } else {
-        navigate('/test');
+        navigate('/home');
       }
     }
   }, [data, cookies, setCookie, navigate]);

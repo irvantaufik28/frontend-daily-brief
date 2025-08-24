@@ -25,7 +25,7 @@ function NavbarLayout() {
 
   const navigate = useNavigate();
   const [cookies, , removeCookie] = useCookies(["token"]);
-  const [userData, setUserData] = useState({ fullName: "User", photo: "" });
+  const [userData, setUserData] = useState({ fullName: "User", photo: "" , role : ""});
   const [notifications, setNotifications] = useState([]);
 
   const apiUrl = config.apiUrl;
@@ -44,6 +44,7 @@ function NavbarLayout() {
         setUserData({
           fullName: decoded.fullName || "User",
           photo: decoded.photo || "",
+          role : decoded.role || ""
         });
       } catch (err) {
         console.error("Invalid token:", err);
@@ -52,25 +53,64 @@ function NavbarLayout() {
   }, [cookies.token]);
 
   // Ambil notifikasi realtime dari Firebase
-  useEffect(() => {
-    const notificationsRef = ref(realtimeDb, 'notifications/admin');
-    const unsubscribe = onValue(notificationsRef, (snapshot) => {
-      const data = snapshot.val();
+  // useEffect(() => {
+  //   const notificationsRef = ref(realtimeDb, 'notifications/admin');
+  //   const unsubscribe = onValue(notificationsRef, (snapshot) => {
+  //     const data = snapshot.val();
 
-      if (data) {
+  //     if (data) {
+  //       const notifArr = Object.entries(data).map(([key, val]) => ({
+  //         id: key,
+  //         ...val,
+  //       }));
+  //       notifArr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  //       setNotifications(notifArr.slice(0, 10));
+  //     } else {
+  //       setNotifications([]);
+  //     }
+  //   });
+
+  //   return () => unsubscribe();
+  // }, []);
+
+  useEffect(() => {
+    const paths = [
+      'notifications/admin',
+      'notifications/user'
+    ];
+
+    const unsubscribes = paths.map((path) => {
+      const notificationsRef = ref(realtimeDb, path);
+
+      return onValue(notificationsRef, (snapshot) => {
+        const data = snapshot.val() || {};
         const notifArr = Object.entries(data).map(([key, val]) => ({
           id: key,
           ...val,
         }));
-        notifArr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setNotifications(notifArr.slice(0, 10));
-      } else {
-        setNotifications([]);
-      }
+
+        // Merge dengan state lama
+        setNotifications((prev) => {
+          const merged = [...prev, ...notifArr];
+
+          // Hilangkan duplikat berdasarkan ID
+          const unique = merged.filter(
+            (item, index, self) => index === self.findIndex((t) => t.id === item.id)
+          );
+
+          // Urutkan
+          unique.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+          // Batasi 10 terakhir
+          return unique.slice(0, 10);
+        });
+      });
     });
 
-    return () => unsubscribe();
+    // cleanup
+    return () => unsubscribes.forEach((unsub) => unsub());
   }, []);
+
 
   // Navigasi setelah report selesai di-fetch
   useEffect(() => {

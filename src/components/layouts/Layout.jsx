@@ -14,7 +14,9 @@ import "./styles/layout.css";
 import NavbarLayout from "./NavbarLayout";
 import { useDispatch, useSelector } from "react-redux";
 import { countDraftReport } from "../../features/reportSlice";
-const getRoutes  = (draftCount) => [
+import { useCookies } from "react-cookie";
+import { jwtDecode as jwtDecode } from "jwt-decode";
+const adminRoutes = (draftCount) => [
     {
         path: "/dashboard",
         name: "Dashboard",
@@ -92,19 +94,51 @@ const getRoutes  = (draftCount) => [
         ],
     },
 ];
+
+
+const userRoutes = () => [
+    {
+        path: "/home",
+        name: "Home",
+        icon: <RxDashboard />,
+    },
+    {
+        path: "/my-reportt",
+        name: "My Report",
+        icon: <HiMiniUserGroup />,
+    }
+];
 const Layout = () => {
     const [isOpen, setIsOpen] = useState(true);
     const toggle = () => setIsOpen(!isOpen);
     const dispatch = useDispatch();
-
+    const [cookies, , removeCookie] = useCookies(["token"]);
     const draftCount = useSelector((state) => state.report.draftCount || 0);
+    const [userData, setUserData] = useState({ fullName: "User", photo: "", role: "" });
+
     useEffect(() => {
         dispatch(countDraftReport());
     }, [dispatch]);
 
-    // const draftCount = 3
+    useEffect(() => {
+        if (cookies.token) {
+            try {
+                const decoded = jwtDecode(cookies.token);
+                setUserData({
+                    fullName: decoded.fullName || "User",
+                    photo: decoded.photo || "",
+                    role: decoded.role || ""
+                });
+            } catch (err) {
+                console.error("Invalid token:", err);
+            }
+        }
+    }, [cookies.token]);
 
-   const routes = getRoutes(draftCount);
+    const routes =
+        userData.role === "ADMIN"
+            ? adminRoutes(draftCount)
+            : userRoutes();
 
     const inputAnimation = {
         hidden: {
